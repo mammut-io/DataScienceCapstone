@@ -1,0 +1,24 @@
+---
+title: "Notebook Ontologies"
+author: "Edilmo Palencia"
+---
+
+The porpuse of this notebook is to check the structure of ontology databases 
+from distributional and linguistic point of view. 
+
+# WordNet  
+
+[WordNet Glossary](http://wordnet.princeton.edu/wordnet/man/wngloss.7WN.html)  
+[WordNet Search](http://wordnetweb.princeton.edu/perl/webwn?s=houses&sub=Search+WordNet&o2=1&o0=1&o8=1&o1=1&o7=&o5=&o9=&o6=&o3=&o4=&h=00000)  
+[WordNet explained](http://everything.explained.today/WordNet/) 
+[WordNet R package](https://cran.r-project.org/web/packages/wordnet/index.html)
+
+```{r x, echo=FALSE, cache=TRUE, message=FALSE}
+```
+
+# DBpedia  
+
+[DBpedia Data Set](http://oldwiki.dbpedia.org/Datasets#h18-19)  
+
+```{r x, echo=FALSE, cache=TRUE, message=FALSE}
+```

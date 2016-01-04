@@ -1,0 +1,847 @@
+---
+title: "NoteBook"
+author: "Edilmo Palencia"
+---
+
+# Task 0 - Obtaining the data & Familiarizing with NLP
+
+The corpus:  
+
+```{r corpusDescription, echo=FALSE, cache=TRUE, message=FALSE}
+currentTime <- Sys.time()
+library(knitr)
+library(R.utils)
+# Check if there is a previous run already saved
+if(file.exists("Corpus.RData")){
+        load("Corpus.RData")
+}else{
+        # Create a empty dataFrame where the corpus description is going to be stored
+        # One row per document
+        corpusDescription <- data.frame(
+                row.names = c("src", "lan", "src-type", "f-name", "f-path"), 
+                stringsAsFactors = FALSE)
+        # There is a directory per Source, so build a list of sources. 
+        corpusSources <- list.dirs(path = "corpus", full.names = FALSE, 
+                                   recursive = FALSE)
+        # Loop over the sources
+        for(s in corpusSources){
+                # There is a directory per Language, so build a list of 
+                # languages for this source. 
+                corpusLanguages <- list.dirs(path = filePath("corpus",s), 
+                                             full.names = FALSE, recursive = FALSE)
+                for(l in corpusLanguages){
+                        # There is a corpus document per source type, so build a list 
+                        # of documents with its source type
+                        filelist <- list.files(filePath("corpus",s,l), 
+                                               full.names = FALSE, recursive = FALSE)
+                        for(f in filelist){
+                                # Let's extract the source type from the file name
+                                st <- strsplit(f,".",fixed = TRUE)
+                                # Let's build the full path of the file
+                                fname <- filePath("corpus",s,l,f)
+                                # Create the row to add in the data frame
+                                r <- c(s,l,st[[1]][2],f,fname)
+                                # Add the new row as column
+                                corpusDescription <- cbind(corpusDescription,r)
+                        }
+                }
+        }
+        # Let's transpose the data frame because all the rows were added as columns
+        corpusDescription <- t(corpusDescription)
+        # Print time elapsed
+        Sys.time() - currentTime
+}
+# Print the data frame
+kable(corpusDescription)
+```
+
+Now let's load the HC Corpora and answer some questions:  
+
+```{r corpusLoading, echo=FALSE, cache=TRUE, message=FALSE}
+library(tm)
+if(!exists("readCorpus")){
+        currentTime <- Sys.time()
+        # Let's load the corpus using the tm package
+        readCorpus <- function(src,lan){
+                Corpus(DirSource(directory = filePath("corpus",src,lan),
+                                                encoding = "",
+                                                pattern = NULL,
+                                                recursive = FALSE,
+                                                ignore.case = FALSE,
+                                                mode = "text"),
+                                    readerControl = list(reader = readPlain,
+                                                         language = lan,
+                                                         load = FALSE))
+        }
+        corpusHCcorporaEnUS <- readCorpus("HC Corpora","en_US")
+        #corpusHCcorporaDeDE <- readCorpus("HC Corpora","de_DE")
+        #corpusHCcorporaFiFI <- readCorpus("HC Corpora","fi_FI")
+        #corpusHCcorporaRuRU <- readCorpus("HC Corpora","ru_RU")
+        # Print time elapsed
+        Sys.time() - currentTime
+}
+```
+
+```{r corpusQuestions, echo=FALSE, cache=TRUE, message=FALSE}
+if(!exists("charCountPerLineEnUSblogs")){
+        currentTime <- Sys.time()
+        # Let's count the amount of characters per line in each document of the english
+        # corpus
+        charCountPerLineEnUSblogs <- sapply(
+                corpusHCcorporaEnUS[["en_US.blogs.txt"]]$content,nchar)
+        charCountPerLineEnUSnews <- sapply(
+                corpusHCcorporaEnUS[["en_US.news.txt"]]$content,nchar)
+        charCountPerLineEnUStwitter <- sapply(
+                corpusHCcorporaEnUS[["en_US.twitter.txt"]]$content,nchar)
+        
+        # Let's compute the lenght of the longest line in each document
+        longestLineLenghtEnUSblogs <- max(charCountPerLineEnUSblogs)
+        longestLineLenghtEnUSnews <- max(charCountPerLineEnUSnews)
+        longestLineLenghtEnUStwitter <- max(charCountPerLineEnUStwitter)
+        
+        # Let's count the amount of times that "love" and "hate" appears in the 
+        # twitter document of the english corpus
+        loveTimesEnUStwitter <- length(which(grepl("love",
+                corpusHCcorporaEnUS[["en_US.twitter.txt"]]$content)))
+        hateTimesEnUStwitter <- length(which(grepl("hate",
+                corpusHCcorporaEnUS[["en_US.twitter.txt"]]$content)))
+        # Let's look for the twitts that contains the word "biostats"
+        twittsWithBiostats <- grep("biostats",
+                corpusHCcorporaEnUS[["en_US.twitter.txt"]]$content, value = TRUE)
+        # Let's look for the exact twitt "A computer once beat me at chess, but it was 
+        # no match for me at kickboxing"
+        twittsWithSpecificText <- grep(
+                "^A computer once beat me at chess, but it was no match for me at kickboxing$",
+                corpusHCcorporaEnUS[["en_US.twitter.txt"]]$content, value = FALSE)
+        # Print time elapsed
+        Sys.time() - currentTime
+}
+
+# Let's compute the amount of characters in the blogs document
+charCountTemp <- sum(charCountPerLineEnUSblogs)
+# Let's compute the amount of lines in the twitter document
+lineCountTemp <- length(corpusHCcorporaEnUS[["en_US.twitter.txt"]]$content)
+        
+```
+
+1. The en_US.blogs.txt file is how many megabytes?  
+        * Araoud `r charCountTemp/1024/1024` Mega bytes.  
+2. The en_US.twitter.txt has how many lines of text?   
+        * Araoud `r lineCountTemp/1000/1000` million lines.  
+3. What is the length of the longest line seen in any of the three en_US data 
+sets?  
+        * EnUSblogs `r longestLineLenghtEnUSblogs`  
+        * EnUSnews `r longestLineLenghtEnUSnews`  
+        * EnUStwitter `r longestLineLenghtEnUStwitter`  
+4. In the en_US twitter data set, if you divide the number of lines where the 
+word "love" (all lowercase) occurs by the number of lines the word "hate" 
+(all lowercase) occurs, about what do you get?  
+        * `r loveTimesEnUStwitter/hateTimesEnUStwitter`  
+5. The one tweet in the en_US twitter data set that matches the word "biostats" 
+says what?  
+        * `r twittsWithBiostats[[1]]`  
+6. How many tweets have the exact characters "A computer once beat me at chess, 
+but it was no match for me at kickboxing". (I.e. the line matches those 
+characters exactly.)  
+        * `r length(twittsWithSpecificText)`  
+7. What does the data look like?  
+        * The data present in the corpus is completed unstructured documents of 
+        natural language texts in 4 languages. There are no pre-proccessing 
+        actions taken.  
+8. Where does the data come from?  
+        * The data comes from 3 kind of sources: news articles, blogs and tweets.  
+9. Can you think of any other data sources that might help you in this project?  
+        * Dictionaries, theasaurus and ontologies.  
+10. What are the common steps in natural language processing?  
+        * Tokenize: corpus segmentation and transformation.  
+                + Word separation  
+                + Multi-word recognition  
+                + Character n-gram  
+                + Lexicon matching  
+                + Punctuation handling  
+                + Stop-words ignoring  
+                + Hyphenation handling  
+        * Normalize: many different strings convey identical meanings.  
+                + Case folding: problematic because case and accent change 
+                meaning sometimes.  
+                + Stemming: problematic because agglutinative languages has many 
+                concepts combined in a single word.  
+                + Lemmatize.  
+                + Profanity Handling.  
+        * Annotation: identical strings may have different meaning.  
+                + Part of the speech tagging.  
+                + Word sense tagging.  
+                + Parsing: making words according to their grammatical role.  
+11. What are some common issues in the analysis of text data?  
+        * Polysemy: it is the capacity of a sign to have multiple meanings.  
+        * Paralanguage recognition: component of meta-communication that may 
+        modify or nuance meaning, or convey emotion.  
+        * Curse of dimensionality - Data Sparsity: curse of dimensionality are 
+        problems that arise when the data is high dimensional. Data sparsity is 
+        specific problem that happens when exist a lot of dimension combinations 
+        that are not populated at all (maybe because it doesn’t make any sense 
+        or just because the data set is incomplete).  
+        * Noisy Morphological Segmentation: morphological analysis is the task 
+        of segmenting a word into morphemes, the smallest meaning- bearing 
+        elements of natural languages. Normally this can be spoiled for 
+        orthographic errors and so.  
+        * Order-Invariance of Factor Composition: happens when a model is not 
+        able to differentiate things like "hangover" de "overhang", which are 
+        two words compose of two morphemes "over" and "hang".  
+        * Inherent Ambiguity of Factor Composition: happens when a model doesn’t 
+        know how to compose in cases like "un[[lock]able]" vs "[un[lock]]able]".  
+12. What is the relationship between NLP and the concepts you have learned in 
+the Specialization?  
+        * Now days, the differents problems attacked by NLP techniques are 
+        considered machine learning problems, and the best techniques in this 
+        field are the same or some extension of the tools tought in the 
+        specialization.  
+
+# Task 1 - Tokenization & Profanity filtering
+
+```{r matrixTermDoc, echo=FALSE, cache=TRUE, message=FALSE}
+#currentTime <- Sys.time()
+# Let's create a term-document matrix with the frequency of each word
+#termDocMatrixEnUS <- TermDocumentMatrix(corpusHCcorporaEnUS)
+# This method is very slow.
+# Print time elapsed
+#Sys.time() - currentTime
+```
+
+Let's do some cleaning and tokenize our corpus:  
+
+```{r simpleTokenization, echo=FALSE, cache=TRUE, message=FALSE}
+if(!exists("corpusHCcorporaEnUS.OnlyLetters")){
+        currentTime <- Sys.time()
+        # Removing the numbers from the corpus
+        corpusHCcorporaEnUS.OnlyLetters <- tm_map(corpusHCcorporaEnUS, removeNumbers, 
+                                                  lazy = FALSE)
+        # Removing the puntuations from the corpus
+        corpusHCcorporaEnUS.OnlyLetters <- tm_map(corpusHCcorporaEnUS.OnlyLetters, 
+                                                  removePunctuation, lazy = FALSE)
+        # Removing the extra white spaces from the corpus
+        corpusHCcorporaEnUS.OnlyLetters <- tm_map(corpusHCcorporaEnUS.OnlyLetters, 
+                                                  stripWhitespace, lazy = FALSE)
+        # Removing the white spaces at the begging and the end
+        corpusHCcorporaEnUS.OnlyLetters <- tm_map(corpusHCcorporaEnUS.OnlyLetters, 
+                                                  content_transformer(trim))
+        # Dictionary with the vocabulary and the index of each word
+        # Use a hashed environment that contains one object per word
+        # The object name is the word itself and the value is the index
+        # of the word. The index is used for the tokenization
+        vocabularyHCcorporaEnUSbyWord <- new.env(hash = TRUE)
+        # Dictionary vector where the index points to the corresponding word
+        vocabularyHCcorporaEnUSbyIndex <- NULL
+        # Dictionary vector where the index points to the frequency of the 
+        # corresponding word in the blogs document of the english corpus
+        wordFreqHCcorporaEnUSblogs <- NULL
+        # Dictionary vector where the index points to the tokenized version of the 
+        # corresponding line in the blogs document of the english corpus. The tokenized
+        # version of a line is a vector of integers with the index of each word.
+        tokenizedHCcorporaEnUSblogs <- NULL
+        # Dictionary vector where the index points to the frequency of the 
+        # corresponding word in the news document of the english corpus
+        wordFreqHCcorporaEnUSnews <- NULL
+        # Dictionary vector where the index points to the tokenized version of the 
+        # corresponding line in the news document of the english corpus. The tokenized
+        # version of a line is a vector of integers with the index of each word.
+        tokenizedHCcorporaEnUSnews <- NULL
+        # Dictionary vector where the index points to the frequency of the 
+        # corresponding word in the twitter document of the english corpus
+        wordFreqHCcorporaEnUStwitter <- NULL
+        # Dictionary vector where the index points to the tokenized version of the 
+        # corresponding line in the twitter document of the english corpus. The tokenized
+        # version of a line is a vector of integers with the index of each word.
+        tokenizedHCcorporaEnUStwitter <- NULL
+        # temporal variable used to store word-frequency dictionaries
+        temp2 <- NULL
+        # Function used to tokenize a line o a document
+        procDocLine <- function(docLine){
+                # result variable to store the tokenize version of the line
+                tokenizeLine <- numeric(length = length(docLine))
+                # index variable of the word to tokenize
+                i <- 1
+                for(w in docLine){
+                        # get the index of the word in our vocabulary dictionary
+                        wIndex <- vocabularyHCcorporaEnUSbyWord[[w]]  
+                        # check if the word exist in our vocabulary
+                        if(is.null(wIndex)){
+                                # the index for a new word it's just the lenght of the 
+                                # vocabulary
+                                wIndex <- length(vocabularyHCcorporaEnUSbyIndex) + 1
+                                # add the word to the vocabulary dictionary by word
+                                vocabularyHCcorporaEnUSbyWord[[w]] <<- wIndex
+                                # add the word to the vocabulary dictionary by index
+                                vocabularyHCcorporaEnUSbyIndex[wIndex] <<- w
+                                # initialize the frequency for the word to 0
+                                temp2[wIndex] <<- 0
+                        }
+                        # increase the frequency of the word
+                        temp2[wIndex] <<- temp2[wIndex] + 1
+                        # append the index of the word the tokenized line
+                        tokenizeLine[i] <- wIndex
+                        # increase the index of the word to process
+                        i <- i + 1
+                }
+                # return the tokenized line
+                tokenizeLine
+        }
+        # Print time elapsed
+        Sys.time() - currentTime
+        currentTime <- Sys.time()
+        # split each line by white spaces in the blogs document
+        temp <- strsplit(
+                corpusHCcorporaEnUS.OnlyLetters[["en_US.blogs.txt"]]$content," ",
+                fixed = TRUE)
+        # clear the temp2 variable
+        temp2 <- NULL
+        # process each splitted line
+        tokenizedHCcorporaEnUSblogs <- lapply(temp, procDocLine)
+        # save the temporal frequency dictionary
+        wordFreqHCcorporaEnUSblogs <- temp2
+        # save a image of the environment
+        save.image("Corpus.RData")
+        # Print time elapsed
+        Sys.time() - currentTime
+        currentTime <- Sys.time()
+        # split each line by white spaces in the blogs document
+        temp <- strsplit(
+                corpusHCcorporaEnUS.OnlyLetters[["en_US.news.txt"]]$content," ",
+                fixed = TRUE)
+        # clear the temp2 variable
+        temp2 <- NULL
+        # process each splitted line
+        tokenizedHCcorporaEnUSnews <- lapply(temp, procDocLine)
+        # save the temporal frequency dictionary
+        wordFreqHCcorporaEnUSnews <- temp2
+        # save a image of the environment
+        save.image("Corpus.RData")
+        # Print time elapsed
+        Sys.time() - currentTime
+        currentTime <- Sys.time()
+        # split each line by white spaces in the blogs document
+        temp <- strsplit(
+                corpusHCcorporaEnUS.OnlyLetters[["en_US.twitter.txt"]]$content," ",
+                fixed = TRUE)
+        # clear the temp2 variable
+        temp2 <- NULL
+        # process each splitted line
+        tokenizedHCcorporaEnUStwitter <- lapply(temp, procDocLine)
+        # save the temporal frequency dictionary
+        wordFreqHCcorporaEnUStwitter <- temp2
+        # save a image of the environment
+        save.image("Corpus.RData")
+        # Print time elapsed
+        Sys.time() - currentTime
+}
+```
+
+Let's load two list of bad words from internet:
+
+```{r profanitySourcing, echo=FALSE, cache=TRUE, message=FALSE}
+if(!exists("badWords")){
+        currentTime <- Sys.time()
+        # Load a bad word list
+        temp <- url("http://www.cs.cmu.edu/~biglou/resources/bad-words.txt")
+        badWords <- readLines(temp)
+        # Convert the frame to vector
+        badWords <- tolower(badWords)
+        badWords <- trim(badWords)
+        badWords <- badWords[which(badWords!="")]
+        close(temp)
+        # Load a swear word list
+        temp <- url("http://www.bannedwordlist.com/lists/swearWords.txt")
+        swearWords <- readLines(temp)
+        # Convert the frame to vector
+        swearWords <- tolower(swearWords)
+        swearWords <- trim(swearWords)
+        swearWords <- swearWords[which(swearWords!="")]
+        close(temp)
+        # Merge bad and swear words
+        temp <- swearWords %in% badWords
+        bad_swearWords <- c(badWords, swearWords[which(!temp)])
+        # Print time elapsed
+        Sys.time() - currentTime
+}
+```
+
+Check vocabulary against profanities list:
+
+```{r profanityTally, echo=FALSE, cache=TRUE, message=FALSE}
+if(!exists("bad_swearWordsInVocabulary")){
+        currentTime <- Sys.time()
+        # Logical vector with the index of the vocabulary words present in the
+        # swear and bad word list
+        bad_swearWordsInVocabulary <- vocabularyHCcorporaEnUSbyIndex %in% bad_swearWords
+        # Frequency of the bad-swear words
+        profanyFreqEnUSblogs <- 
+                wordFreqHCcorporaEnUSblogs[which(bad_swearWordsInVocabulary)]
+        profanyFreqEnUSnews <- 
+                wordFreqHCcorporaEnUSnews[which(bad_swearWordsInVocabulary)]
+        profanyFreqEnUStwitter <- 
+                wordFreqHCcorporaEnUStwitter[which(bad_swearWordsInVocabulary)]
+        # bad-swear words
+        profanyEnUS <- 
+                vocabularyHCcorporaEnUSbyIndex[which(bad_swearWordsInVocabulary)]
+        # Data frame of Frequency of the bad-swear words
+        profanyDFEnUSblogs <- data.frame(profanyEnUS,profanyFreqEnUSblogs)
+        profanyDFEnUSblogs <- profanyDF[order(profanyFreqEnUSblogs,profanyEnUS, 
+                                     decreasing = TRUE),]
+        profanyDFEnUSnews <- data.frame(profanyEnUS,profanyFreqEnUSnews)
+        profanyDFEnUSnews <- profanyDF[order(profanyFreqEnUSnews,profanyEnUS, 
+                                     decreasing = TRUE),]
+        profanyDFEnUStwitter <- data.frame(profanyEnUS,profanyFreqEnUStwitter)
+        profanyDFEnUStwitter <- profanyDF[order(profanyFreqEnUStwitter,profanyEnUS, 
+                                     decreasing = TRUE),]
+        ammountOfBad_SwearWordsInVocabularyEnUS <- length(profanyEnUS)
+        # Print time elapsed
+        Sys.time() - currentTime
+        kable(profanyDFEnUSblogs[1:30,], 
+              caption = "First 30 more frequent bad-swear words in EN-US blogs")
+        kable(profanyDFEnUSnews[1:30,], 
+              caption = "First 30 more frequent bad-swear words in EN-US news")
+        kable(profanyDFEnUStwitter[1:30,], 
+              caption = "First 30 more frequent bad-swear words in EN-US twitter")
+}
+```
+
+The above table shows the first 30 swear-bad words of the vocabularry and their
+frequency. The total of swear-bad words is 
+`r ammountOfBad_SwearWordsInVocabularyEnUS`.
+As can be see it, the majority of the words are not bad words by definition. It's
+depends on the context. So we prefer do not remove the bad and swear words and 
+look for approaches that consider the usage.
+
+# Task 2 - Exploratory analysis & Understand frequencies of words and word pairs
+
+Let's see the distribution of the frequencies of the vocabullary in En US blogs:  
+
+```{r vocabullaryStatsEnUSblogs, echo=FALSE, cache=TRUE, message=FALSE}
+if(!exists("wordTotalHCcorporaEnUSblogs")){
+        # Total of words in the document
+        wordTotalHCcorporaEnUSblogs <- sum(
+                wordFreqHCcorporaEnUSblogs[which(wordFreqHCcorporaEnUSblogs != 0)])
+        # Compute the amount of words with a frequency less or equal to 5
+        wordFreq0_5lHCcorporaEnUSblogs <- 
+                length(which(wordFreqHCcorporaEnUSblogs == 1))
+        wordFreq0_5lHCcorporaEnUSblogs <- wordFreq0_5lHCcorporaEnUSblogs + 
+                length(which(wordFreqHCcorporaEnUSblogs == 2))
+        wordFreq0_5lHCcorporaEnUSblogs <- wordFreq0_5lHCcorporaEnUSblogs + 
+                length(which(wordFreqHCcorporaEnUSblogs == 3))
+        wordFreq0_5lHCcorporaEnUSblogs <- wordFreq0_5lHCcorporaEnUSblogs + 
+                length(which(wordFreqHCcorporaEnUSblogs == 4))
+        wordFreq0_5lHCcorporaEnUSblogs <- wordFreq0_5lHCcorporaEnUSblogs + 
+                length(which(wordFreqHCcorporaEnUSblogs == 5))
+        # Compute the amount of words with a frequency less or equal to 9
+        wordFreq0_9lHCcorporaEnUSblogs <- wordFreq0_5lHCcorporaEnUSblogs + 
+                length(which(wordFreqHCcorporaEnUSblogs == 6))
+        wordFreq0_9lHCcorporaEnUSblogs <- wordFreq0_9lHCcorporaEnUSblogs + 
+                length(which(wordFreqHCcorporaEnUSblogs == 7))
+        wordFreq0_9lHCcorporaEnUSblogs <- wordFreq0_9lHCcorporaEnUSblogs + 
+                length(which(wordFreqHCcorporaEnUSblogs == 8))
+        wordFreq0_9lHCcorporaEnUSblogs <- wordFreq0_9lHCcorporaEnUSblogs + 
+                length(which(wordFreqHCcorporaEnUSblogs == 9))
+        # represents the percentege of the vocabullary that is cover by the words that 
+        # have a frequency less or equal to 5
+        wordFreq0_5lHCcorporaEnUSblogsPercentege <- 
+                wordFreq0_5lHCcorporaEnUSblogs/
+                length(which(wordFreqHCcorporaEnUSblogs != 0))
+        # represents the percentege of the vocabullary that is cover by the words that 
+        # have a frequency less or equal to 9
+        wordFreq0_9lHCcorporaEnUSblogsPercentege <- 
+                wordFreq0_9lHCcorporaEnUSblogs/
+                length(which(wordFreqHCcorporaEnUSblogs != 0))
+        
+        # Word indexes order by frequency
+        wordOrderHCcorporaEnUSblogs <- order(wordFreqHCcorporaEnUSblogs, decreasing = TRUE)
+        # Represents the 10000 word more frequents of the vocabulary
+        percentege10kWordMoreFreqHCcorporaEnUSblogs <- sum(
+                wordFreqHCcorporaEnUSblogs[wordOrderHCcorporaEnUSblogs[1:10000]]) /
+                wordTotalHCcorporaEnUSblogs
+        # Represents the 2700 word more frequents of the vocabulary
+        percentege2700WordMoreFreqHCcorporaEnUSblogs <- sum(
+                wordFreqHCcorporaEnUSblogs[wordOrderHCcorporaEnUSblogs[1:2700]]) /
+                wordTotalHCcorporaEnUSblogs
+        # Represents the 140 word more frequents of the vocabulary
+        percentege140WordMoreFreqHCcorporaEnUSblogs <- sum(
+                wordFreqHCcorporaEnUSblogs[wordOrderHCcorporaEnUSblogs[1:140]]) /
+                wordTotalHCcorporaEnUSblogs
+        # Represents the 15 word more frequents of the vocabulary
+        percentege15WordMoreFreqHCcorporaEnUSblogs <- sum(
+                wordFreqHCcorporaEnUSblogs[wordOrderHCcorporaEnUSblogs[1:15]]) /
+                wordTotalHCcorporaEnUSblogs
+}
+hist(log10(wordFreqHCcorporaEnUSblogs[wordOrderHCcorporaEnUSblogs[1:10000]]), 
+     main = "Log10 Distribution of 2700 more frequents word of EnUSblogs", 
+     xlab = "log10 of word frequency")
+```
+
+Facts for the EnUS blogs document:  
+
+* The percentege of words used is 
+`r length(which(wordFreqHCcorporaEnUSblogs != 0))/length(wordFreqHCcorporaEnUSblogs)*100`%  
+* The percentege of the vocabullary that is cover by the words that have a 
+frequency less or equal to 5 is 
+`r wordFreq0_5lHCcorporaEnUSblogsPercentege*100`%  
+* The percentege of the vocabullary that is cover by the words that have a 
+frequency less or equal to 9 is 
+`r wordFreq0_9lHCcorporaEnUSblogsPercentege*100`%  
+* The percentege of words in the document that is cover by the 10K more 
+frequent words is `r percentege10kWordMoreFreqHCcorporaEnUSblogs*100`%  
+* The percentege of words in the document that is cover by the 2,7K more 
+frequent words is `r percentege2700WordMoreFreqHCcorporaEnUSblogs*100`%  
+* The percentege of words in the document that is cover by the 140 more 
+frequent words is `r percentege140WordMoreFreqHCcorporaEnUSblogs*100`%  
+* The percentege of words in the document that is cover by the 15 more 
+frequent words is `r percentege15WordMoreFreqHCcorporaEnUSblogs*100`%  
+* The 15 more frequent words are: 
+`r vocabularyHCcorporaEnUSbyIndex[wordOrderHCcorporaEnUSblogs[1:15]]`  
+
+Let's see the distribution of the frequencies of the vocabullary in En US news:  
+
+```{r vocabullaryStatsEnUSnews, echo=FALSE, cache=TRUE, message=FALSE}
+if(!exists("wordTotalHCcorporaEnUSnews")){
+        # Total of words in the document
+        wordTotalHCcorporaEnUSnews <- sum(
+                wordFreqHCcorporaEnUSnews[which(wordFreqHCcorporaEnUSnews != 0)])
+        # Compute the amount of words with a frequency less or equal to 2
+        wordFreq0_2lHCcorporaEnUSnews <- 
+                length(which(wordFreqHCcorporaEnUSnews == 1))
+        wordFreq0_2lHCcorporaEnUSnews <- wordFreq0_2lHCcorporaEnUSnews + 
+                length(which(wordFreqHCcorporaEnUSnews == 2))
+        # Compute the amount of words with a frequency less or equal to 5
+        wordFreq0_5lHCcorporaEnUSnews <- wordFreq0_2lHCcorporaEnUSnews + 
+                length(which(wordFreqHCcorporaEnUSnews == 3))
+        wordFreq0_5lHCcorporaEnUSnews <- wordFreq0_5lHCcorporaEnUSnews + 
+                length(which(wordFreqHCcorporaEnUSnews == 4))
+        wordFreq0_5lHCcorporaEnUSnews <- wordFreq0_5lHCcorporaEnUSnews + 
+                length(which(wordFreqHCcorporaEnUSnews == 5))
+        # Compute the amount of words with a frequency less or equal to 9
+        wordFreq0_9lHCcorporaEnUSnews <- wordFreq0_5lHCcorporaEnUSnews + 
+                length(which(wordFreqHCcorporaEnUSnews == 6))
+        wordFreq0_9lHCcorporaEnUSnews <- wordFreq0_9lHCcorporaEnUSnews + 
+                length(which(wordFreqHCcorporaEnUSnews == 7))
+        wordFreq0_9lHCcorporaEnUSnews <- wordFreq0_9lHCcorporaEnUSnews + 
+                length(which(wordFreqHCcorporaEnUSnews == 8))
+        wordFreq0_9lHCcorporaEnUSnews <- wordFreq0_9lHCcorporaEnUSnews + 
+                length(which(wordFreqHCcorporaEnUSnews == 9))
+        # represents the percentege of the vocabullary that is cover by the words that 
+        # have a frequency less or equal to 2
+        wordFreq0_2lHCcorporaEnUSnewsPercentege <- 
+                wordFreq0_2lHCcorporaEnUSnews/
+                length(which(wordFreqHCcorporaEnUSnews != 0))
+        # represents the percentege of the vocabullary that is cover by the words that 
+        # have a frequency less or equal to 5
+        wordFreq0_5lHCcorporaEnUSnewsPercentege <- 
+                wordFreq0_5lHCcorporaEnUSnews/
+                length(which(wordFreqHCcorporaEnUSnews != 0))
+        # represents the percentege of the vocabullary that is cover by the words that 
+        # have a frequency less or equal to 9
+        wordFreq0_9lHCcorporaEnUSnewsPercentege <- 
+                wordFreq0_9lHCcorporaEnUSnews/
+                length(which(wordFreqHCcorporaEnUSnews != 0))
+        
+        # Word indexes order by frequency
+        wordOrderHCcorporaEnUSnews <- order(wordFreqHCcorporaEnUSnews, decreasing = TRUE)
+        # Represents the 165000 word more frequents of the vocabulary
+        percentege165kWordMoreFreqHCcorporaEnUSnews <- sum(
+                wordFreqHCcorporaEnUSnews[wordOrderHCcorporaEnUSnews[1:165000]]) /
+                wordTotalHCcorporaEnUSnews
+        # Represents the 115000 word more frequents of the vocabulary
+        percentege115KWordMoreFreqHCcorporaEnUSnews <- sum(
+                wordFreqHCcorporaEnUSnews[wordOrderHCcorporaEnUSnews[1:115000]]) /
+                wordTotalHCcorporaEnUSnews
+        # Represents the 23000 word more frequents of the vocabulary
+        percentege23KWordMoreFreqHCcorporaEnUSnews <- sum(
+                wordFreqHCcorporaEnUSnews[wordOrderHCcorporaEnUSnews[1:23000]]) /
+                wordTotalHCcorporaEnUSnews
+        # Represents the 4000 word more frequents of the vocabulary
+        percentege4kWordMoreFreqHCcorporaEnUSnews <- sum(
+                wordFreqHCcorporaEnUSnews[wordOrderHCcorporaEnUSnews[1:4000]]) /
+                wordTotalHCcorporaEnUSnews
+}
+hist(log10(wordFreqHCcorporaEnUSnews[wordOrderHCcorporaEnUSnews[1:115000]]), 
+     main = "Log10 Distribution of 115000 more frequents word of EnUSnews", 
+     xlab = "log10 of word frequency")
+```
+
+Facts for the EnUS news document:  
+
+* The percentege of words used is 
+`r length(which(wordFreqHCcorporaEnUSnews != 0))/length(wordFreqHCcorporaEnUSnews)*100`%  
+* The percentege of the vocabullary that is cover by the words that have a 
+frequency less or equal to 2 is 
+`r wordFreq0_2lHCcorporaEnUSnewsPercentege*100`%  
+* The percentege of the vocabullary that is cover by the words that have a 
+frequency less or equal to 5 is 
+`r wordFreq0_5lHCcorporaEnUSnewsPercentege*100`%  
+* The percentege of the vocabullary that is cover by the words that have a 
+frequency less or equal to 9 is 
+`r wordFreq0_9lHCcorporaEnUSnewsPercentege*100`%  
+* The percentege of words in the document that is cover by the 165K more 
+frequent words is `r percentege165kWordMoreFreqHCcorporaEnUSnews*100`%  
+* The percentege of words in the document that is cover by the 115K more 
+frequent words is `r percentege115KWordMoreFreqHCcorporaEnUSnews*100`%  
+* The percentege of words in the document that is cover by the 23K more 
+frequent words is `r percentege23KWordMoreFreqHCcorporaEnUSnews*100`%  
+* The percentege of words in the document that is cover by the 4K more 
+frequent words is `r percentege4kWordMoreFreqHCcorporaEnUSnews*100`%  
+* The 15 more frequent words are: 
+`r vocabularyHCcorporaEnUSbyIndex[wordOrderHCcorporaEnUSnews[1:15]]`  
+
+Let's see the distribution of the frequencies of the vocabullary in En US tweets:  
+
+```{r vocabullaryStatsEnUStwitter, echo=FALSE, cache=TRUE, message=FALSE}
+if(!exists("wordTotalHCcorporaEnUStwitter")){
+        # Total of words in the document
+        wordTotalHCcorporaEnUStwitter <- sum(
+                wordFreqHCcorporaEnUStwitter[which(wordFreqHCcorporaEnUStwitter != 0)])
+        # Compute the amount of words with a frequency less or equal to 2
+        wordFreq0_2lHCcorporaEnUStwitter <- 
+                length(which(wordFreqHCcorporaEnUStwitter == 1))
+        wordFreq0_2lHCcorporaEnUStwitter <- wordFreq0_2lHCcorporaEnUStwitter + 
+                length(which(wordFreqHCcorporaEnUStwitter == 2))
+        # Compute the amount of words with a frequency less or equal to 5
+        wordFreq0_5lHCcorporaEnUStwitter <- wordFreq0_2lHCcorporaEnUStwitter + 
+                length(which(wordFreqHCcorporaEnUStwitter == 3))
+        wordFreq0_5lHCcorporaEnUStwitter <- wordFreq0_5lHCcorporaEnUStwitter + 
+                length(which(wordFreqHCcorporaEnUStwitter == 4))
+        wordFreq0_5lHCcorporaEnUStwitter <- wordFreq0_5lHCcorporaEnUStwitter + 
+                length(which(wordFreqHCcorporaEnUStwitter == 5))
+        # Compute the amount of words with a frequency less or equal to 9
+        wordFreq0_9lHCcorporaEnUStwitter <- wordFreq0_5lHCcorporaEnUStwitter + 
+                length(which(wordFreqHCcorporaEnUStwitter == 6))
+        wordFreq0_9lHCcorporaEnUStwitter <- wordFreq0_9lHCcorporaEnUStwitter + 
+                length(which(wordFreqHCcorporaEnUStwitter == 7))
+        wordFreq0_9lHCcorporaEnUStwitter <- wordFreq0_9lHCcorporaEnUStwitter + 
+                length(which(wordFreqHCcorporaEnUStwitter == 8))
+        wordFreq0_9lHCcorporaEnUStwitter <- wordFreq0_9lHCcorporaEnUStwitter + 
+                length(which(wordFreqHCcorporaEnUStwitter == 9))
+        # represents the percentege of the vocabullary that is cover by the words that 
+        # have a frequency less or equal to 2
+        wordFreq0_2lHCcorporaEnUStwitterPercentege <- 
+                wordFreq0_2lHCcorporaEnUStwitter/
+                length(which(wordFreqHCcorporaEnUStwitter != 0))
+        # represents the percentege of the vocabullary that is cover by the words that 
+        # have a frequency less or equal to 5
+        wordFreq0_5lHCcorporaEnUStwitterPercentege <- 
+                wordFreq0_5lHCcorporaEnUStwitter/
+                length(which(wordFreqHCcorporaEnUStwitter != 0))
+        # represents the percentege of the vocabullary that is cover by the words that 
+        # have a frequency less or equal to 9
+        wordFreq0_9lHCcorporaEnUStwitterPercentege <- 
+                wordFreq0_9lHCcorporaEnUStwitter/
+                length(which(wordFreqHCcorporaEnUStwitter != 0))
+        
+        # Word indexes order by frequency
+        wordOrderHCcorporaEnUStwitter <- order(wordFreqHCcorporaEnUStwitter, decreasing = TRUE)
+        # Represents the 350000 word more frequents of the vocabulary
+        percentege350kWordMoreFreqHCcorporaEnUStwitter <- sum(
+                wordFreqHCcorporaEnUStwitter[wordOrderHCcorporaEnUStwitter[1:350000]]) /
+                wordTotalHCcorporaEnUStwitter
+        # Represents the 285000 word more frequents of the vocabulary
+        percentege285KWordMoreFreqHCcorporaEnUStwitter <- sum(
+                wordFreqHCcorporaEnUStwitter[wordOrderHCcorporaEnUStwitter[1:285000]]) /
+                wordTotalHCcorporaEnUStwitter
+        # Represents the 80000 word more frequents of the vocabulary
+        percentege80KWordMoreFreqHCcorporaEnUStwitter <- sum(
+                wordFreqHCcorporaEnUStwitter[wordOrderHCcorporaEnUStwitter[1:80000]]) /
+                wordTotalHCcorporaEnUStwitter
+        # Represents the 11000 word more frequents of the vocabulary
+        percentege11KWordMoreFreqHCcorporaEnUStwitter <- sum(
+                wordFreqHCcorporaEnUStwitter[wordOrderHCcorporaEnUStwitter[1:11000]]) /
+                wordTotalHCcorporaEnUStwitter
+}
+hist(log10(wordFreqHCcorporaEnUStwitter[wordOrderHCcorporaEnUStwitter[1:285000]]), 
+     main = "Log10 Distribution of 285000 more frequents word of EnUStwitter", 
+     xlab = "log10 of word frequency")
+```
+
+Facts for the EnUS tweets document:  
+
+* The percentege of words used is 
+`r length(which(wordFreqHCcorporaEnUStwitter != 0))/length(wordFreqHCcorporaEnUStwitter)*100`%  
+* The percentege of the vocabullary that is cover by the words that have a 
+frequency less or equal to 5 is 
+`r wordFreq0_5lHCcorporaEnUStwitterPercentege*100`%  
+* The percentege of the vocabullary that is cover by the words that have a 
+frequency less or equal to 9 is 
+`r wordFreq0_9lHCcorporaEnUStwitterPercentege*100`%  
+* The percentege of words in the document that is cover by the 350K more 
+frequent words is `r percentege350kWordMoreFreqHCcorporaEnUStwitter*100`%  
+* The percentege of words in the document that is cover by the 285K more 
+frequent words is `r percentege285KWordMoreFreqHCcorporaEnUStwitter*100`%  
+* The percentege of words in the document that is cover by the 80K more 
+frequent words is `r percentege80KWordMoreFreqHCcorporaEnUStwitter*100`%  
+* The percentege of words in the document that is cover by the 11K more 
+frequent words is `r percentege11KWordMoreFreqHCcorporaEnUStwitter*100`%  
+* The 15 more frequent words are: 
+`r vocabularyHCcorporaEnUSbyIndex[wordOrderHCcorporaEnUStwitter[1:15]]`  
+
+Let's compute the 2-gram and 3-gram frequencies for EnUSblogs:  
+
+```{r nGramFreq, echo=FALSE, cache=TRUE, message=FALSE}
+if(!exists("wordPairFreqHCcorporaEnUSblogs")){
+        # Two environments intended to keep the 2-gram and 3-gram
+        wordPairFreqHCcorporaEnUSblogs <- new.env(hash = TRUE)
+        wordTripletFreqHCcorporaEnUSblogs <- new.env(hash = TRUE)
+        nGramIndexEnUSblogs <- rep(-1,length(wordOrderHCcorporaEnUSblogs))
+        for(i in 1:10000){
+              nGramIndexEnUSblogs[wordOrderHCcorporaEnUSblogs[i]]<- i  
+        }
+        wordPairCountEnUSblogs <- 0
+        wordTripletCountEnUSblogs <- 0
+        
+        # The dimmension has been setted to preserve the n-grams
+        procTokLine <- function(tL){
+                temp2 <- length(tL)
+                for(i in 1:temp2) {
+                        if((i+1)<=temp2){
+                                i2 <- nGramIndexEnUSblogs[tL[i]]
+                                if(i2==-1 || i2>2700)
+                                        i2 <- 2701
+                                i1 <- nGramIndexEnUSblogs[tL[i+1]]
+                                if(i1==-1)
+                                        i1 <- 10001
+                                pI <- paste0(i1,"_",i2)
+                                pC <- wordPairFreqHCcorporaEnUSblogs[[pI]]  
+                                if(is.null(pC))
+                                        pC <- 0
+                                wordPairFreqHCcorporaEnUSblogs[[pI]] <<- pC + 1
+                                if((i+2)<=temp2){
+                                        i3 <- nGramIndexEnUSblogs[tL[i]]
+                                        if(i3==-1 || i3>140)
+                                                i3 <- 141
+                                        i2 <- nGramIndexEnUSblogs[tL[i+1]]
+                                        if(i2==-1 || i2>2700)
+                                                i2 <- 2701
+                                        i1 <- nGramIndexEnUSblogs[tL[i]]
+                                        if(i1==-1 || i1>2700)
+                                                i1 <- 2701
+                                        tI <- paste0(i1,"_",i2, "_", i3)
+                                        tC <- wordTripletFreqHCcorporaEnUSblogs[[tI]]  
+                                        if(is.null(tC))
+                                                tC <- 0
+                                        wordTripletFreqHCcorporaEnUSblogs[[tI]] <<- tC + 1
+                                        wordTripletCountEnUSblogs <<- 
+                                                wordTripletCountEnUSblogs + 1
+                                }
+                                wordPairCountEnUSblogs <<- wordPairCountEnUSblogs + 1
+                        }
+                        else
+                        {
+                                break
+                        }
+                }
+        }
+        currentTime <- Sys.time()
+        temp <- sapply(
+                tokenizedHCcorporaEnUSblogs[1:50000], 
+                procTokLine)
+        # Print time elapsed
+        Sys.time() - currentTime
+        currentTime <- Sys.time()
+        # save a image of the environment
+        save.image("Corpus1.RData")
+        # Print time elapsed
+        Sys.time() - currentTime
+
+        currentTime <- Sys.time()
+        temp <- sapply(
+                tokenizedHCcorporaEnUSblogs[50001:100000], 
+                procTokLine)
+        # Print time elapsed
+        Sys.time() - currentTime
+        currentTime <- Sys.time()
+        # save a image of the environment
+        save.image("Corpus0.RData")
+        # Print time elapsed
+        Sys.time() - currentTime
+
+        currentTime <- Sys.time()
+        temp <- sapply(
+                tokenizedHCcorporaEnUSblogs[100001:length(tokenizedHCcorporaEnUSblogs)], 
+                procTokLine)
+        # Print time elapsed
+        Sys.time() - currentTime
+        currentTime <- Sys.time()
+        # save a image of the environment
+        save.image("Corpus.RData")
+        # Print time elapsed
+        Sys.time() - currentTime
+}
+
+temp <- ls(wordPairFreqHCcorporaEnUSblogs)
+temp <- sapply(temp, function(v){wordPairFreqHCcorporaEnUSblogs[[v]]})
+temp <- log10(temp)
+hist(temp, 
+     main = "Log10 Distribution of bi-grams of EnUSblogs", 
+     xlab = "log10 of word frequency")
+
+temp <- ls(wordTripletFreqHCcorporaEnUSblogs)
+temp <- sapply(temp, function(v){wordTripletFreqHCcorporaEnUSblogs[[v]]})
+temp <- log10(temp)
+hist(temp, 
+     main = "Log10 Distribution of tri-grams of EnUSblogs", 
+     xlab = "log10 of word frequency")
+```
+
+1. Some words are more frequent than others - what are the distributions of word 
+frequencies?  
+        * People tends to use as few words as possible. The log10 of the 
+        frequency has a exponential decay distribution.  
+2. What are the frequencies of 2-grams and 3-grams in the dataset? 
+        * The behaviour is the same, People tends to use as few n-grams as
+        possible. The log10 of the frequency has a exponential decay distribution.   
+3. How many unique words do you need in a frequency sorted dictionary to cover 
+50% of all word instances in the language? 90%?  
+        * As we showed above, it depends on the source (blogs, news, twitter, 
+        etc.). But it is clear that araound 20% of the vocabullary covers more 
+        than 80% of the words.  
+4. How do you evaluate how many of the words come from foreign languages?  
+        * Checking against a lexicom of the Supported words.
+5. Can you think of a way to increase the coverage -- identifying words that may 
+not be in the corpora or using a smaller number of words in the dictionary to 
+cover the same number of phrases?  
+        * We can create a model that consider the morphological composition of 
+        the words, and use the embeddings of this as inputs of our ngram model.  
+
+# Task 3 - Build basic n-gram model & handle unseen n-grams  
+
+```{r x, echo=FALSE, cache=TRUE, message=FALSE}
+```
+
+1. How can you efficiently store an n-gram model (think Markov Chains)?  
+2. How can you use the knowledge about word frequencies to make your model 
+smaller and more efficient?  
+3. How many parameters do you need (i.e. how big is n in your n-gram model)?  
+4. Can you think of simple ways to "smooth" the probabilities (think about 
+giving all n-grams a non-zero probability even if they aren't observed in the 
+data) ?  
+5. How do you evaluate whether your model is any good?  
+6. How can you use 
+[backoff models](http://en.wikipedia.org/wiki/Katz%27s_back-off_model) to 
+estimate the probability of unobserved n-grams?
+
+# Task 4 - Build a predictive model & valuate the model for efficiency and accuracy  
+
+```{r x, echo=FALSE, cache=TRUE, message=FALSE}
+```
+
+1. How does the model perform for different choices of the parameters and size 
+of the model?  
+2. How much does the model slow down for the performance you gain?  
+3. Does perplexity correlate with the other measures of accuracy?  
+4. Can you reduce the size of the model (number of parameters) without reducing 
+performance?  
+
+
+```{r x, echo=FALSE, cache=TRUE, message=FALSE}
+```
+
+[CRAN Task View: Natural Language Processing](https://cran.r-project.org/web/views/NaturalLanguageProcessing.html)  
+[Zipf's law](https://en.wikipedia.org/wiki/Zipf%27s_law)  
+[n-gram model](http://en.wikipedia.org/wiki/N-gram)  
+[Google Books	Ngram Viewer](http://storage.googleapis.com/books/ngrams/books/datasetsv2.html)  
+[backoff models](http://en.wikipedia.org/wiki/Katz%27s_back-off_model)  
+[Good–Turing frequency estimation](https://en.wikipedia.org/wiki/Good–Turing_frequency_estimation)

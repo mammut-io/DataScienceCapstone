@@ -1,0 +1,153 @@
+---
+title: "TaskO-NoteBook"
+author: "Edilmo Palencia"
+date: "December 18, 2015"
+output: html_document
+---
+
+The corpus:  
+
+```{r corpusDescription, echo=FALSE, cache=TRUE, message=FALSE}
+library(knitr)
+library(R.utils)
+# Create a empty dataFrame where the corpus description is going to be stored
+# One row per document
+corpusDescription <- data.frame(
+        row.names = c("src", "lan", "src-type", "f-name", "f-path"), 
+        stringsAsFactors = FALSE)
+# There is a directory per Source, so build a list of sources. 
+corpusSources <- list.dirs(path = "corpus", full.names = FALSE, 
+                           recursive = FALSE)
+# Loop over the sources
+for(s in corpusSources){
+        # There is a directory per Language, so build a list of 
+        # languages for this source. 
+        corpusLanguages <- list.dirs(path = filePath("corpus",s), 
+                                     full.names = FALSE, recursive = FALSE)
+        for(l in corpusLanguages){
+                # There is a corpus document per source type, so build a list 
+                # of documents with its source type
+                filelist <- list.files(filePath("corpus",s,l), 
+                                       full.names = FALSE, recursive = FALSE)
+                for(f in filelist){
+                        # Let's extract the source type from the file name
+                        st <- strsplit(f,".",fixed = TRUE)
+                        # Let's build the full path of the file
+                        fname <- filePath("corpus",s,l,f)
+                        # Create the row to add in the data frame
+                        r <- c(s,l,st[[1]][2],f,fname)
+                        # Add the new row as column
+                        corpusDescription <- cbind(corpusDescription,r)
+                }
+        }
+}
+# Let's transpose the data frame because all the rows were added as columns
+corpusDescription <- t(corpusDescription)
+# Print the data frame
+kable(corpusDescription)
+```
+
+Now let's load the HC Corpora and answer some questions:  
+
+```{r corpusLoading, echo=FALSE, cache=TRUE, message=FALSE}
+library(tm)
+# Let's load the corpus using the tm package
+readCorpus <- function(src,lan){
+        Corpus(DirSource(directory = filePath("corpus",src,lan),
+                                        encoding = "",
+                                        pattern = NULL,
+                                        recursive = FALSE,
+                                        ignore.case = FALSE,
+                                        mode = "text"),
+                            readerControl = list(reader = readPlain,
+                                                 language = lan,
+                                                 load = FALSE))
+}
+corpusHCcorporaEnUS <- readCorpus("HC Corpora","en_US")
+#corpusHCcorporaDeDE <- readCorpus("HC Corpora","de_DE")
+#corpusHCcorporaFiFI <- readCorpus("HC Corpora","fi_FI")
+#corpusHCcorporaRuRU <- readCorpus("HC Corpora","ru_RU")
+```
+
+```{r corpusQuestions, echo=FALSE, cache=TRUE, message=FALSE}
+# Let's count the amount of characters per line in each document of the english
+# corpus
+charCountPerLineEnUSblogs <- sapply(
+        corpusHCcorporaEnUS[["en_US.blogs.txt"]]$content,nchar)
+charCountPerLineEnUSnews <- sapply(
+        corpusHCcorporaEnUS[["en_US.news.txt"]]$content,nchar)
+charCountPerLineEnUStwitter <- sapply(
+        corpusHCcorporaEnUS[["en_US.twitter.txt"]]$content,nchar)
+
+# Let's compute the amount of characters in the blogs document
+charCountTemp <- sum(charCountPerLineEnUSblogs)
+# Let's compute the amount of lines in the twitter document
+lineCountTemp <- length(corpusHCcorporaEnUS[["en_US.twitter.txt"]]$content)
+
+# Let's compute the lenght of the longest line in each document
+longestLineLenghtEnUSblogs <- max(charCountPerLineEnUSblogs)
+longestLineLenghtEnUSnews <- max(charCountPerLineEnUSnews)
+longestLineLenghtEnUStwitter <- max(charCountPerLineEnUStwitter)
+
+# Let's count the amount of times that "love" and "hate" appears in the 
+# twitter document of the english corpus
+loveTimesEnUStwitter <- length(which(grepl("love",
+        corpusHCcorporaEnUS[["en_US.twitter.txt"]]$content)))
+hateTimesEnUStwitter <- length(which(grepl("hate",
+        corpusHCcorporaEnUS[["en_US.twitter.txt"]]$content)))
+# Let's look for the twitts that contains the word "biostats"
+twittsWithBiostats <- grep("biostats",
+        corpusHCcorporaEnUS[["en_US.twitter.txt"]]$content, value = TRUE)
+# Let's look for the exact twitt "A computer once beat me at chess, but it was 
+# no match for me at kickboxing"
+twittsWithSpecificText <- grep(
+        "^A computer once beat me at chess, but it was no match for me at kickboxing$",
+        corpusHCcorporaEnUS[["en_US.twitter.txt"]]$content, value = FALSE)
+```
+
+```{r matrixTermDoc, echo=FALSE, cache=TRUE, message=FALSE}
+# Let's create a term-document matrix with the frequency of each word
+#termDocMatrixEnUS <- TermDocumentMatrix(corpusHCcorporaEnUS)
+
+```
+
+```{r matrixTermDoc2, echo=FALSE, cache=TRUE, message=FALSE}
+# Let's create a term-document matrix 
+
+
+```
+
+1. The en_US.blogs.txt file is how many megabytes?  
+        * Araoud `r charCountTemp/1024/1024` Mega bytes.  
+2. The en_US.twitter.txt has how many lines of text?   
+        * Araoud `r lineCountTemp/1000/1000` million lines.  
+3. What is the length of the longest line seen in any of the three en_US data 
+sets?  
+        * EnUSblogs `r longestLineLenghtEnUSblogs`  
+        * EnUSnews `r longestLineLenghtEnUSnews`  
+        * EnUStwitter `r longestLineLenghtEnUStwitter`  
+4. In the en_US twitter data set, if you divide the number of lines where the 
+word "love" (all lowercase) occurs by the number of lines the word "hate" 
+(all lowercase) occurs, about what do you get?  
+        * `r loveTimesEnUStwitter/hateTimesEnUStwitter`  
+5. The one tweet in the en_US twitter data set that matches the word "biostats" 
+says what?  
+        * `r twittsWithBiostats[[1]]`  
+6. How many tweets have the exact characters "A computer once beat me at chess, 
+but it was no match for me at kickboxing". (I.e. the line matches those 
+characters exactly.)  
+        * `r length(twittsWithSpecificText)`  
+7. What do the data look like?  
+        * The data present in the corpus is completed unstructured documents of 
+        natural language texts in 4 languages. There is not any pre-proccessing 
+        actions taked.
+8. Where do the data come from?
+        * The data come from 3 kind of sources: news articles, blogs and twitts.  
+9. Can you think of any other data sources that might help you in this project?
+What are the common steps in natural language processing?
+What are some common issues in the analysis of text data?
+What is the relationship between NLP and the concepts you have learned in the Specialization?
+
+```{r, echo=FALSE}
+```
+
