@@ -1033,7 +1033,7 @@ frequent bigram is `r percentege15PairMoreFreqHCcorporaEnUSblogs*100`%
 
 Let's check some stats about the trigrams:
 
-```{r nGramStatsEnUSblogs, echo=FALSE, cache=TRUE, message=FALSE}
+```{r triGramStatsEnUSblogs, echo=FALSE, cache=TRUE, message=FALSE}
 if(!exists("gram3FreqHCcorporaEnUSblogs")){
     # Extract the word triplets frequencies from the environment used
     gram3FreqHCcorporaEnUSblogs <- ls(wordTripletFreqHCcorporaEnUSblogs)
