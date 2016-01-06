@@ -21,6 +21,16 @@ if(file.exists("Corpus.RData")){
     corpusDescription <- data.frame(
         row.names = c("src", "lan", "src-type", "f-name", "f-path"), 
         stringsAsFactors = FALSE)
+    # Check if the corpus has been downloaded
+    if(!file.exists("corpus")){
+        download.file(
+                "https://d396qusza40orc.cloudfront.net/dsscapstone/dataset/Coursera-SwiftKey.zip",
+                "corpus.zip", "curl")
+        unzip("corpus.zip")
+        dir.create("corpus")
+        file.rename("final","corpus/HC Corpora")
+        file.remove("corpus.zip")
+    }
     # There is a directory per Source, so build a list of sources. 
     corpusSources <- list.dirs(path = "corpus", full.names = FALSE, 
                    recursive = FALSE)
@@ -789,7 +799,7 @@ if(!file.exists("Corpus2.RData")){
 }
 ```
 
-```{r nGramFreq3, echo=FALSE, cache=TRUE, message=FALSE}
+```{r nGramFreq3, echo=FALSE, cache=TRUE, message=FALSE, include=FALSE}
 if(!file.exists("Corpus3.RData")){
     currentTime <- Sys.time()
     if(loadCorpus)
@@ -808,7 +818,7 @@ if(!file.exists("Corpus3.RData")){
 }
 ```
 
-```{r nGramFreq4, echo=FALSE, cache=TRUE, message=FALSE}
+```{r nGramFreq4, echo=FALSE, cache=TRUE, message=FALSE, include=FALSE}
 if(!file.exists("Corpus4.RData")){
     currentTime <- Sys.time()
     if(loadCorpus)
@@ -827,7 +837,7 @@ if(!file.exists("Corpus4.RData")){
 }
 ```
 
-```{r nGramFreq5, echo=FALSE, cache=TRUE, message=FALSE}
+```{r nGramFreq5, echo=FALSE, cache=TRUE, message=FALSE, include=FALSE}
 if(!file.exists("Corpus5.RData")){
     currentTime <- Sys.time()
     if(loadCorpus)
@@ -846,7 +856,7 @@ if(!file.exists("Corpus5.RData")){
 }
 ```
 
-```{r nGramFreq6, echo=FALSE, cache=TRUE, message=FALSE}
+```{r nGramFreq6, echo=FALSE, cache=TRUE, message=FALSE, include=FALSE}
 if(!file.exists("Corpus6.RData")){
     currentTime <- Sys.time()
     if(loadCorpus)
@@ -865,7 +875,7 @@ if(!file.exists("Corpus6.RData")){
 }
 ```
 
-```{r nGramFreq7, echo=FALSE, cache=TRUE, message=FALSE}
+```{r nGramFreq7, echo=FALSE, cache=TRUE, message=FALSE, include=FALSE}
 if(!file.exists("Corpus7.RData")){
     currentTime <- Sys.time()
     if(loadCorpus)
@@ -884,7 +894,7 @@ if(!file.exists("Corpus7.RData")){
 }
 ```
 
-```{r nGramFreq8, echo=FALSE, cache=TRUE, message=FALSE}
+```{r nGramFreq8, echo=FALSE, cache=TRUE, message=FALSE, include=FALSE}
 if(!file.exists("Corpus8.RData")){
     currentTime <- Sys.time()
     if(loadCorpus)
@@ -903,7 +913,7 @@ if(!file.exists("Corpus8.RData")){
 }
 ```
 
-```{r nGramFreq9, echo=FALSE, cache=TRUE, message=FALSE}
+```{r nGramFreq9, echo=FALSE, cache=TRUE, message=FALSE, include=FALSE}
 if(!file.exists("Corpus9.RData")){
     currentTime <- Sys.time()
     if(loadCorpus)
@@ -922,7 +932,7 @@ if(!file.exists("Corpus9.RData")){
 }
 ```
 
-```{r nGramFreq10, echo=FALSE, cache=TRUE, message=FALSE}
+```{r nGramFreq10, eval=FALSE, message=FALSE, cache=TRUE, include=FALSE}
 if(!file.exists("Corpus10.RData")){
     currentTime <- Sys.time()
     if(loadCorpus)
@@ -1029,7 +1039,7 @@ frequent bigram is `r percentege140PairMoreFreqHCcorporaEnUSblogs*100`%
 * The percentege of bigram in the document that is cover by the 15 (`r (15/length(which(gram2FreqHCcorporaEnUSblogs != 0)))*100`%) more 
 frequent bigram is `r percentege15PairMoreFreqHCcorporaEnUSblogs*100`%  
 * The 15 more frequent bigram are: 
-`r (names(pairOrderHCcorporaEnUSblogs))[pairOrderHCcorporaEnUSblogs[1:15]]`  
+`r (names(gram2FreqHCcorporaEnUSblogs))[pairOrderHCcorporaEnUSblogs[1:15]]`  
 
 Let's check some stats about the trigrams:
 
@@ -1118,7 +1128,7 @@ frequent trigram is `r percentege140TripletMoreFreqHCcorporaEnUSblogs*100`%
 * The percentege of trigram in the document that is cover by the 15 (`r (15/length(which(gram3FreqHCcorporaEnUSblogs != 0)))*100`%) more 
 frequent trigram is `r percentege15TripletMoreFreqHCcorporaEnUSblogs*100`%  
 * The 15 more frequent trigram are: 
-`r (names(tripletOrderHCcorporaEnUSblogs))[tripletOrderHCcorporaEnUSblogs[1:15]]`  
+`r (names(gram3FreqHCcorporaEnUSblogs))[tripletOrderHCcorporaEnUSblogs[1:15]]`  
 
 Questions:
 1. Some words are more frequent than others - what are the distributions of word 
