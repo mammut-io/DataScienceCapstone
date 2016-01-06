@@ -799,7 +799,7 @@ if(!file.exists("Corpus2.RData")){
 }
 ```
 
-```{r nGramFreq3, echo=FALSE, cache=TRUE, message=FALSE, include=FALSE}
+```{r nGramFreq3, echo=FALSE, cache=TRUE, message=FALSE}
 if(!file.exists("Corpus3.RData")){
     currentTime <- Sys.time()
     if(loadCorpus)
@@ -818,7 +818,7 @@ if(!file.exists("Corpus3.RData")){
 }
 ```
 
-```{r nGramFreq4, echo=FALSE, cache=TRUE, message=FALSE, include=FALSE}
+```{r nGramFreq4, echo=FALSE, cache=TRUE, message=FALSE}
 if(!file.exists("Corpus4.RData")){
     currentTime <- Sys.time()
     if(loadCorpus)
@@ -837,7 +837,7 @@ if(!file.exists("Corpus4.RData")){
 }
 ```
 
-```{r nGramFreq5, echo=FALSE, cache=TRUE, message=FALSE, include=FALSE}
+```{r nGramFreq5, echo=FALSE, cache=TRUE, message=FALSE}
 if(!file.exists("Corpus5.RData")){
     currentTime <- Sys.time()
     if(loadCorpus)
@@ -856,7 +856,7 @@ if(!file.exists("Corpus5.RData")){
 }
 ```
 
-```{r nGramFreq6, echo=FALSE, cache=TRUE, message=FALSE, include=FALSE}
+```{r nGramFreq6, echo=FALSE, cache=TRUE, message=FALSE}
 if(!file.exists("Corpus6.RData")){
     currentTime <- Sys.time()
     if(loadCorpus)
@@ -875,7 +875,7 @@ if(!file.exists("Corpus6.RData")){
 }
 ```
 
-```{r nGramFreq7, echo=FALSE, cache=TRUE, message=FALSE, include=FALSE}
+```{r nGramFreq7, echo=FALSE, cache=TRUE, message=FALSE}
 if(!file.exists("Corpus7.RData")){
     currentTime <- Sys.time()
     if(loadCorpus)
@@ -894,7 +894,7 @@ if(!file.exists("Corpus7.RData")){
 }
 ```
 
-```{r nGramFreq8, echo=FALSE, cache=TRUE, message=FALSE, include=FALSE}
+```{r nGramFreq8, echo=FALSE, cache=TRUE, message=FALSE}
 if(!file.exists("Corpus8.RData")){
     currentTime <- Sys.time()
     if(loadCorpus)
@@ -913,7 +913,7 @@ if(!file.exists("Corpus8.RData")){
 }
 ```
 
-```{r nGramFreq9, echo=FALSE, cache=TRUE, message=FALSE, include=FALSE}
+```{r nGramFreq9, echo=FALSE, cache=TRUE, message=FALSE}
 if(!file.exists("Corpus9.RData")){
     currentTime <- Sys.time()
     if(loadCorpus)
@@ -932,7 +932,7 @@ if(!file.exists("Corpus9.RData")){
 }
 ```
 
-```{r nGramFreq10, eval=FALSE, message=FALSE, cache=TRUE, include=FALSE}
+```{r nGramFreq10, echo=FALSE, message=FALSE, cache=TRUE}
 if(!file.exists("Corpus10.RData")){
     currentTime <- Sys.time()
     if(loadCorpus)
@@ -1038,8 +1038,18 @@ frequent bigram is `r percentege2700PairMoreFreqHCcorporaEnUSblogs*100`%
 frequent bigram is `r percentege140PairMoreFreqHCcorporaEnUSblogs*100`%  
 * The percentege of bigram in the document that is cover by the 15 (`r (15/length(which(gram2FreqHCcorporaEnUSblogs != 0)))*100`%) more 
 frequent bigram is `r percentege15PairMoreFreqHCcorporaEnUSblogs*100`%  
-* The 15 more frequent bigram are: 
-`r (names(gram2FreqHCcorporaEnUSblogs))[pairOrderHCcorporaEnUSblogs[1:15]]`  
+* The 15 more frequent bigram are:  
+```{r biGramMoreFreq, echo=FALSE, cache=TRUE, message=FALSE}
+kable(sapply((names(gram2FreqHCcorporaEnUSblogs))[pairOrderHCcorporaEnUSblogs[1:15]], function(pair){
+    temp <- sapply(strsplit(pair,"_", fixed = TRUE),as.numeric)
+    temp2 <- character(length = 2)
+    temp2[1] <- ifelse(temp[[1]]==10001,"UNK",
+        vocabularyHCcorporaEnUSbyIndex[temp[[1]]])
+    temp2[2] <- ifelse(temp[[2]]==2701,"UNK",
+        vocabularyHCcorporaEnUSbyIndex[temp[[2]]])
+    t(temp2)
+}))
+```
 
 Let's check some stats about the trigrams:
 
@@ -1128,7 +1138,20 @@ frequent trigram is `r percentege140TripletMoreFreqHCcorporaEnUSblogs*100`%
 * The percentege of trigram in the document that is cover by the 15 (`r (15/length(which(gram3FreqHCcorporaEnUSblogs != 0)))*100`%) more 
 frequent trigram is `r percentege15TripletMoreFreqHCcorporaEnUSblogs*100`%  
 * The 15 more frequent trigram are: 
-`r (names(gram3FreqHCcorporaEnUSblogs))[tripletOrderHCcorporaEnUSblogs[1:15]]`  
+```{r triGramMoreFreq, echo=FALSE, cache=TRUE, message=FALSE}
+kable(sapply((names(gram3FreqHCcorporaEnUSblogs))[tripletOrderHCcorporaEnUSblogs[1:15]], 
+        function(triplet){
+    temp <- sapply(strsplit(triplet,"_", fixed = TRUE),as.numeric)
+    temp2 <- character(length = 2)
+    temp2[1] <- ifelse(temp[[1]]==2701,"UNK",
+        vocabularyHCcorporaEnUSbyIndex[temp[[1]]])
+    temp2[2] <- ifelse(temp[[2]]==2701,"UNK",
+        vocabularyHCcorporaEnUSbyIndex[temp[[2]]])
+    temp2[3] <- ifelse(temp[[2]]==141,"UNK",
+        vocabularyHCcorporaEnUSbyIndex[temp[[3]]])
+    t(temp2)
+}))
+```
 
 Questions:
 1. Some words are more frequent than others - what are the distributions of word 
