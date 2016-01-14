@@ -66,7 +66,7 @@ if(file.exists("Corpus.RData")){
 kable(corpusDescription)
 ```
 
-Now let's load the HC Corpora and answer some questions:  
+## Questions about the HC Corpora  
 
 ```{r corpusLoading, echo=FALSE, cache=TRUE, message=FALSE}
 library(tm)
@@ -136,7 +136,7 @@ lineCountTemp <- length(corpusHCcorporaEnUS[["en_US.twitter.txt"]]$content)
 ```
 
 1. The en_US.blogs.txt file is how many megabytes?  
-    * Araoud `r charCountTemp/1024/1024` Mega bytes.
+    * Araoud `r charCountTemp/1024/1024` Mega bytes.  
 2. The en_US.twitter.txt has how many lines of text?  
     * Araoud `r lineCountTemp/1000/1000` million lines.  
 3. What is the length of the longest line seen in any of the three en_US data 
@@ -165,24 +165,24 @@ characters exactly.)
     * Dictionaries, theasaurus and ontologies.  
 10. What are the common steps in natural language processing?  
     * Tokenize: corpus segmentation and transformation.  
-    + Word separation  
-    + Multi-word recognition  
-    + Character n-gram  
-    + Lexicon matching  
-    + Punctuation handling  
-    + Stop-words ignoring  
-    + Hyphenation handling  
+        + Word separation  
+        + Multi-word recognition  
+        + Character n-gram  
+        + Lexicon matching  
+        + Punctuation handling  
+        + Stop-words ignoring  
+        + Hyphenation handling  
     * Normalize: many different strings convey identical meanings.  
-    + Case folding: problematic because case and accent change 
-    meaning sometimes.  
-    + Stemming: problematic because agglutinative languages has many 
-    concepts combined in a single word.  
-    + Lemmatize.  
-    + Profanity Handling.  
+        + Case folding: problematic because case and accent change 
+        meaning sometimes.  
+        + Stemming: problematic because agglutinative languages has many 
+        concepts combined in a single word.  
+        + Lemmatize.  
+        + Profanity Handling.  
     * Annotation: identical strings may have different meaning.  
-    + Part of the speech tagging.  
-    + Word sense tagging.  
-    + Parsing: making words according to their grammatical role.  
+        + Part of the speech tagging.  
+        + Word sense tagging.  
+        + Parsing: making words according to their grammatical role.  
 11. What are some common issues in the analysis of text data?  
     * Polysemy: it is the capacity of a sign to have multiple meanings.  
     * Paralanguage recognition: component of meta-communication that may 
@@ -218,8 +218,6 @@ the Specialization?
 # Print time elapsed
 #Sys.time() - currentTime
 ```
-
-Let's do some cleaning and tokenize our corpus:  
 
 ```{r simpleTokenization, echo=FALSE, cache=TRUE, message=FALSE}
 if(!exists("corpusHCcorporaEnUS.OnlyLetters")){
@@ -347,8 +345,6 @@ if(!exists("corpusHCcorporaEnUS.OnlyLetters")){
 }
 ```
 
-Let's load two list of bad words from internet:
-
 ```{r profanitySourcing, echo=FALSE, cache=TRUE, message=FALSE}
 if(!exists("badWords")){
     currentTime <- Sys.time()
@@ -376,7 +372,8 @@ if(!exists("badWords")){
 }
 ```
 
-Check vocabulary against profanities list:
+## Vocabulary & profanities  
+Two list of bad words from internet, one of bad words and other of swear words.  
 
 ```{r profanityTally, echo=FALSE, cache=TRUE, message=FALSE}
 if(!exists("profanyDFEnUStwitter")){
@@ -425,7 +422,7 @@ look for approaches that consider the usage.
 
 # Task 2 - Exploratory analysis & Understand frequencies of words and word pairs
 
-Let's see the distribution of the frequencies of the vocabullary in En US blogs:  
+## Distribution of the frequencies of the vocabullary in En US blogs  
 
 ```{r vocabullaryStatsEnUSblogs, echo=FALSE, cache=TRUE, message=FALSE}
 if(!exists("wordTotalHCcorporaEnUSblogs")){
@@ -487,6 +484,8 @@ hist(log10(wordFreqHCcorporaEnUSblogs[wordOrderHCcorporaEnUSblogs[1:10000]]),
      xlab = "log10 of word frequency")
 ```
 
+Total of words in the vocabulary is `r length(wordFreqHCcorporaEnUSblogs)`
+
 Facts for the EnUS blogs document:  
 
 * The percentege of words used is 
@@ -508,7 +507,7 @@ frequent words is `r percentege15WordMoreFreqHCcorporaEnUSblogs*100`%
 * The 15 more frequent words are: 
 `r vocabularyHCcorporaEnUSbyIndex[wordOrderHCcorporaEnUSblogs[1:15]]`  
 
-Let's see the distribution of the frequencies of the vocabullary in En US news:  
+## Distribution of the frequencies of the vocabullary in En US news  
 
 ```{r vocabullaryStatsEnUSnews, echo=FALSE, cache=TRUE, message=FALSE}
 if(!exists("wordTotalHCcorporaEnUSnews")){
@@ -600,7 +599,7 @@ frequent words is `r percentege4kWordMoreFreqHCcorporaEnUSnews*100`%
 * The 15 more frequent words are: 
 `r vocabularyHCcorporaEnUSbyIndex[wordOrderHCcorporaEnUSnews[1:15]]`  
 
-Let's see the distribution of the frequencies of the vocabullary in En US tweets:  
+## Distribution of the frequencies of the vocabullary in En US tweets  
 
 ```{r vocabullaryStatsEnUStwitter, echo=FALSE, cache=TRUE, message=FALSE}
 if(!exists("wordTotalHCcorporaEnUStwitter")){
@@ -689,7 +688,7 @@ frequent words is `r percentege11KWordMoreFreqHCcorporaEnUStwitter*100`%
 * The 15 more frequent words are: 
 `r vocabularyHCcorporaEnUSbyIndex[wordOrderHCcorporaEnUStwitter[1:15]]`  
 
-Let's compute the 2-gram and 3-gram frequencies for EnUSblogs:  
+## Frequencies of word pair and triplet for EnUSblogs  
 
 ```{r nGramFreq, echo=FALSE, cache=TRUE, message=FALSE}
 if(!exists("wordPairFreqHCcorporaEnUSblogs")){
@@ -951,7 +950,7 @@ if(!file.exists("Corpus10.RData")){
 }
 ```
 
-Let's check some stats about the bigrams:
+### Word pairs stats  
 
 ```{r biGramStatsEnUSblogs, echo=FALSE, cache=TRUE, message=FALSE}
 if(!exists("gram2FreqHCcorporaEnUSblogs")){
@@ -1051,7 +1050,7 @@ kable(sapply((names(gram2FreqHCcorporaEnUSblogs))[pairOrderHCcorporaEnUSblogs[1:
 }))
 ```
 
-Let's check some stats about the trigrams:
+### Word triplets stats  
 
 ```{r triGramStatsEnUSblogs, echo=FALSE, cache=TRUE, message=FALSE}
 if(!exists("gram3FreqHCcorporaEnUSblogs")){
@@ -1153,7 +1152,8 @@ kable(sapply((names(gram3FreqHCcorporaEnUSblogs))[tripletOrderHCcorporaEnUSblogs
 }))
 ```
 
-Questions:
+## Questions about frequency of words  
+
 1. Some words are more frequent than others - what are the distributions of word 
 frequencies?  
     * People tends to use as few words as possible. The log10 of the 
@@ -1167,12 +1167,186 @@ frequencies?
     etc.). But it is clear that araound 20% of the vocabullary covers more 
     than 80% of the words.  
 4. How do you evaluate how many of the words come from foreign languages?  
-    * Checking against a lexicom of the Supported words.
+    * Checking against a lexicom of the Supported words. There is not significant 
+    difference between a unknown word and a foreing word.  
 5. Can you think of a way to increase the coverage -- identifying words that may 
 not be in the corpora or using a smaller number of words in the dictionary to 
 cover the same number of phrases?  
+    * We can make assumptions of the next word based on the previous words. This 
+    is known as ngrams models.  
+    * Due to the course of dimenssionality of ngram models, specifically the 
+    sparsity generated for the high frequency of few words combined with the low 
+    frequency of a lot of words; we can build a ngram model that not consider 
+    all of the n-1 previous words and just consider n-1-k previous words. This 
+    is known as skipgrams models.  
     * We can create a model that consider the morphological composition of 
-    the words, and use the embeddings of this as inputs of our ngram model.  
+    the words, and use the embeddings of this as inputs of our skipgram model.  
+
+## Distribution of the frequencies of the characters over the vocabullary  
+
+```{r characterFreqEnUS, echo=FALSE, cache=TRUE, message=FALSE}
+library(plyr)
+if(!file.exists("CorpusCharacterFreq1.RData"))
+    system.time({
+    print("Generating Corpus Character Freq.")
+    alphabetFreqHCcorporaEnUSblogs <- lapply(vocabularyHCcorporaEnUSbyIndex, 
+        function(w){
+            chr <- strsplit(w, "")[[1]]
+            chr <- table(chr)
+            chr <- chr * wordFreqHCcorporaEnUSblogs[vocabularyHCcorporaEnUSbyWord[[w]]]
+            chr <- as.data.frame(chr, stringsAsFactors = FALSE)
+            colnames(chr) <- c("chr", "Freq")
+            chr
+        })
+    alphabetFreqHCcorporaEnUSblogs <- rbind.fill(alphabetFreqHCcorporaEnUSblogs)
+    alphabetFreqHCcorporaEnUSblogs$chr <- as.character(alphabetFreqHCcorporaEnUSblogs$chr)
+    alphabetFreqHCcorporaEnUS <- table(alphabetFreqHCcorporaEnUSblogs$chr)
+    alphabetOrderFreqHCcorporaEnUS <- order(alphabetFreqHCcorporaEnUS, 
+                                            decreasing = TRUE)
+    save(alphabetFreqHCcorporaEnUSblogs, alphabetFreqHCcorporaEnUS,
+         alphabetOrderFreqHCcorporaEnUS,
+        file = "CorpusCharacterFreq1.RData")
+})else{
+    print("Loading previous Corpus Character Freq.")
+    load("CorpusCharacterFreq1.RData")
+}
+```
+
+```{r characterFreqEnUSblogs, echo=FALSE, cache=TRUE, message=FALSE}
+temp <- ddply(alphabetFreqHCcorporaEnUSblogs, 
+    .(chr), function(x) sum(x$Freq))
+#alphabetFreqHCcorporaEnUSblogs <- alphabetFreqHCcorporaEnUSblogs[
+#    order(alphabetFreqHCcorporaEnUSblogs$V1, decreasing = TRUE),]
+```
+
+Some facts:  
+- Total of characters is `r length(alphabetFreqHCcorporaEnUS)`.  
+- The 64 more frequent characters in the vocabulary are: `r names(alphabetFreqHCcorporaEnUS)[alphabetOrderFreqHCcorporaEnUS[1:64]]`
+- The 64 more frequent characters in the EnUS blogs document are: `r alphabetFreqHCcorporaEnUSblogs$chr[1:64]`
+
+```{r characterFreqEnUSGraph, echo=FALSE, cache=TRUE, message=FALSE}
+enChars <- strsplit("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789", "")[[1]]
+
+hist(log10(alphabetFreqHCcorporaEnUS), 
+     main = "Log10 Distribution of characters of EnUS vocabulary", 
+     xlab = "log10 of character frequency")
+hist(log10(alphabetFreqHCcorporaEnUS[enChars]), 
+     main = "Log10 Distribution of 64 characters of English in the vocabulary", 
+     xlab = "log10 of character frequency")
+
+#hist(log10(alphabetFreqHCcorporaEnUSblogs$V1), 
+#     main = "Log10 Distribution of characters of EnUS blogs document", 
+#     xlab = "log10 of character frequency")
+#temp <- which(alphabetFreqHCcorporaEnUSblogs$chr %in% enChars)
+#temp <- alphabetFreqHCcorporaEnUSblogs$V1[as.numeric(temp)]
+#temp <- subset(alphabetFreqHCcorporaEnUSblogs, chr == 'i')
+#temp <- log10(alphabetFreqHCcorporaEnUSblogs$V1[temp])
+#head(temp)
+#dim(alphabetFreqHCcorporaEnUSblogs)
+#class(alphabetFreqHCcorporaEnUSblogs$chr)
+head(alphabetFreqHCcorporaEnUSblogs)
+length(which(is.na(alphabetFreqHCcorporaEnUSblogs$Freq)))
+#length(temp)
+#class(temp)
+head(temp)
+length(which(is.na(temp$V1)))
+#max(temp)
+#min(temp)
+#hist(temp, 
+#     main = "Log10 Distribution of 64 characters of English in the EnUS blogs document", 
+#     xlab = "log10 of character frequency")
+```
+
+## Distribution of the frequencies of the syllables over the vocabullary  
+
+```{r cmuDictEnUS, echo=FALSE, cache=TRUE, message=FALSE}
+if(!file.exists("CorpusCMUdic.RData"))
+    system.time({
+    print("Generating CMU Dictionary.")
+    currentTime <- Sys.time()
+    cmuPronDicEnUS <- readLines(file("CMUPronuciationDict/cmudict-07b-20160113.txt"))
+    cmuPronDicEnUS <- cmuPronDicEnUS[128:133906]
+    cmuPronDicEnUS <- unlist(strsplit(cmuPronDicEnUS, "  ", fixed = TRUE))
+    cmuPronDicEnUS <- matrix(cmuPronDicEnUS, ncol = (length(cmuPronDicEnUS)/2))
+    cmuPronDicEnUS <- t(cmuPronDicEnUS)
+    cmuPronDicEnUS <- as.data.frame(cmuPronDicEnUS, stringsAsFactors = FALSE)
+    colnames(cmuPronDicEnUS) <- c("w","s")
+    cmuPronDicEnUS$w <- as.character(cmuPronDicEnUS$w)
+    cmuPronDicEnUS$s <- as.character(cmuPronDicEnUS$s)
+    totalWordCMUProDic <- length(cmuPronDicEnUS$w)
+    temp <- grepl("[/(]{1}[1-3]{1}[/)]{1}",cmuPronDicEnUS$w)
+    totalHomophoneCMUProDic <- length(which(temp))
+    cmuPronDicEnUS <- cmuPronDicEnUS[which(!temp), ]
+    totalDifWordCMUProDic <- length(cmuPronDicEnUS$w)
+    cmuPronDicEnUSFreq <- data.frame()
+    procCMUPro <- function(s){
+        temp <- unlist(strsplit(s," "))
+        res <- length(temp)
+        temp <- table(temp)
+        cmuPronDicEnUSFreq <<- rbind.fill(cmuPronDicEnUSFreq, as.data.frame(temp))
+        res
+    }
+    cmuPronDicEnUS$sC <- sapply(cmuPronDicEnUS$s, procCMUPro)
+    cmuPronDicEnUSFreq <- ddply(cmuPronDicEnUSFreq, 
+        .(temp), function(x) sum(x$Freq))
+    cmuPronDicEnUSdic <- new.env(hash = TRUE)
+    for(i in 1:length(cmuPronDicEnUS$w))
+        cmuPronDicEnUSdic[[cmuPronDicEnUS$w[i]]] <- cmuPronDicEnUS$s[i]
+    save(cmuPronDicEnUS, totalWordCMUProDic, totalHomophoneCMUProDic,
+         totalDifWordCMUProDic, cmuPronDicEnUSFreq, cmuPronDicEnUSdic,
+        file = "CorpusCMUdic.RData")
+    Sys.time() - currentTime
+})else{
+    print("Loading previous CMU dictionary.")
+    load("CorpusCMUdic.RData")
+}
+```
+
+```{r syllableFreqEnUS, echo=FALSE, cache=TRUE, message=FALSE}
+#library(koRpus)
+#if(!file.exists("Corpus11.RData")){
+#    print("Running hyphenation algoritm.")
+    currentTime <- Sys.time()
+    #syllableHCcorporaEnUS<-hyphen(vocabularyHCcorporaEnUSbyIndex, 
+    #hyph.pattern = "en")@hyphen
+    # save a image of the environment
+#    save(syllableHCcorporaEnUS, 
+#        file = "Corpus11.RData")
+    Sys.time() - currentTime
+#}else{
+    print("Loading previous hyphenation algorithm result.")
+#    load("Corpus11.RData")
+#}
+```
+
+```{r syllableFreqEnUS2, echo=FALSE, cache=TRUE, message=FALSE}
+sylProc <- function(w){
+        syl <- strsplit(w, "-")[[1]]
+        syl <- table(syl)
+        w <- gsub("-", "", w, fixed = TRUE)
+        syl <- syl * wordFreqHCcorporaEnUSblogs[vocabularyHCcorporaEnUSbyWord[[w]]]
+        as.data.frame(syl)
+    }
+#syllableFreqHCcorporaEnUSblogs <- lapply(syllableHCcorporaEnUS$word, 
+#    sylProc)
+#syllableFreqHCcorporaEnUSblogs <- rbind.fill(syllableFreqHCcorporaEnUSblogs)
+#syllableFreqHCcorporaEnUSblogs$syl <- 
+#    as.character(syllableFreqHCcorporaEnUSblogs$syl)
+#syllableFreqHCcorporaEnUS <- table(syllableFreqHCcorporaEnUSblogs$syl)
+#syllableOrderFreqHCcorporaEnUS <- order(syllableFreqHCcorporaEnUS, 
+#                                        decreasing = TRUE)
+```
+
+```{r syllableFreqEnUSblogs, echo=FALSE, cache=TRUE, message=FALSE}
+```
+
+Some facts:  
+- Total of words in CMU Pronuciation Dictionary `r length(totalWordCMUProDic)`.  
+- Total of words in CMU Pronuciation Dictionary that are different pronunciation
+of the same word `r length(totalHomophoneCMUProDic)`.  
+
+- The 64 more frequent characters in the vocabulary are: `r names(alphabetFreqHCcorporaEnUS)[alphabetOrderFreqHCcorporaEnUS[1:64]]`
+- The 64 more frequent characters in the EnUS blogs document are: `r alphabetFreqHCcorporaEnUSblogs$chr[1:64]`
 
 # Task 3 - Build basic n-gram model & handle unseen n-grams  
 

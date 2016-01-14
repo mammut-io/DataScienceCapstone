@@ -1,21 +1,23 @@
 ---
 title: "Notebook Ontologies"
 author: "Edilmo Palencia"
+output: html_document
 ---
 
 The porpuse of this notebook is to check the structure of ontology databases 
 from distributional and linguistic point of view.  
 The exploratory analysis includes:  
-* Character frequency in words. This includes characters in the inflexions of the 
+
+1. Character frequency in words. This includes characters in the inflexions of the 
 word. e.g. House and Housed are treated as two different words.  
-* Syllable frequency in words. This includes characters in the inflexions of the 
+2. Syllable frequency in words. This includes characters in the inflexions of the 
 word. There different ways to separate words in syllable and this can change 
 from language to language. In english for example, it is common two kinds that 
 are presented below with another resources:  
     + [Hyphenation algorithm](https://en.wikipedia.org/wiki/Hyphenation_algorithm):  
     there is dictionaries that includes this separation code for each word:  
-        - [The CMU Pronouncing Dictionary](http://www.speech.cs.cmu.edu/cgi-bin/cmudict)  
-        - [Nettalk Corpus](https://archive.ics.uci.edu/ml/datasets/Connectionist+Bench+(Nettalk+Corpus))  
+        * [The CMU Pronouncing Dictionary](http://www.speech.cs.cmu.edu/cgi-bin/cmudict)  
+        * [Nettalk Corpus](https://archive.ics.uci.edu/ml/datasets/Connectionist+Bench+(Nettalk+Corpus))  
     + [Arpabet phonetic transcription code](https://en.wikipedia.org/wiki/Arpabet): 
     this is a more complicated case ([Stack Overflow](http://stackoverflow.com/questions/405161/detecting-syllables-in-a-word)). 
     + More details can be found in 
@@ -24,17 +26,19 @@ are presented below with another resources:
         * [Hunspell](http://hunspell.sourceforge.net) ([in R](https://journal.r-project.org/archive/2011-2/RJournal_2011-2_Hornik+Murdoch.pdf))  
         * [Java](https://github.com/troywatson/Lawrence-Style-Checker)
         * [Javascript](https://github.com/mnater/hyphenator)
-* Word frequency in synsets.  
-* Word causality.
-* Word convention.
-* Word context.
+3. Word frequency in synsets.  
+4. Word causality.
+5. Word convention.
+6. Word context.
 
 # WordNet  
 
-[WordNet Glossary](http://wordnet.princeton.edu/wordnet/man/wngloss.7WN.html)  
-[WordNet Search](http://wordnetweb.princeton.edu/perl/webwn?s=houses&sub=Search+WordNet&o2=1&o0=1&o8=1&o1=1&o7=&o5=&o9=&o6=&o3=&o4=&h=00000)  
-[WordNet explained](http://everything.explained.today/WordNet/) 
-[WordNet R package](https://cran.r-project.org/web/packages/wordnet/index.html)
+Some references:  
+
+- [WordNet Glossary](http://wordnet.princeton.edu/wordnet/man/wngloss.7WN.html)  
+- [WordNet Search](http://wordnetweb.princeton.edu/perl/webwn?s=houses&sub=Search+WordNet&o2=1&o0=1&o8=1&o1=1&o7=&o5=&o9=&o6=&o3=&o4=&h=00000)  
+- [WordNet explained](http://everything.explained.today/WordNet/)  
+- [WordNet R package](https://cran.r-project.org/web/packages/wordnet/index.html)  
 
 ```{r x, echo=FALSE, cache=TRUE, message=FALSE}
 ```
