@@ -40,7 +40,13 @@ Some references:
 - [WordNet explained](http://everything.explained.today/WordNet/)  
 - [WordNet R package](https://cran.r-project.org/web/packages/wordnet/index.html)  
 
-```{r x, echo=FALSE, cache=TRUE, message=FALSE}
+```{r charFreq, echo=FALSE, cache=TRUE, message=FALSE}
+library(wordnet)
+filter <- getTermFilter("WildcardFilter", "*", TRUE)
+nouns <- getIndexTerms("NOUN", -1, NULL)
+      synsets <- getSynsets(terms[[1]])
+      related <- getRelatedSynsets(synsets[[1]], "!")
+      sapply(related, getWord)
 ```
 
 # DBpedia  
@@ -49,3 +55,10 @@ Some references:
 
 ```{r x, echo=FALSE, cache=TRUE, message=FALSE}
 ```
+
+https://en.wiktionary.org/wiki/safe
+https://en.wikipedia.org/wiki/Safe_(disambiguation)
+https://en.wikiversity.org/wiki/Safety
+http://dictionaryapi.net/
+http://developer.wordnik.com/docs.html#!/word
+https://www.wordsapi.com/

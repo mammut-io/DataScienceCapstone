@@ -1263,7 +1263,6 @@ length(which(is.na(temp$V1)))
 if(!file.exists("CorpusCMUdic.RData"))
     system.time({
     print("Generating CMU Dictionary.")
-    currentTime <- Sys.time()
     cmuPronDicEnUS <- readLines(file("CMUPronuciationDict/cmudict-07b-20160113.txt"))
     cmuPronDicEnUS <- cmuPronDicEnUS[128:133906]
     cmuPronDicEnUS <- unlist(strsplit(cmuPronDicEnUS, "  ", fixed = TRUE))
@@ -1295,7 +1294,6 @@ if(!file.exists("CorpusCMUdic.RData"))
     save(cmuPronDicEnUS, totalWordCMUProDic, totalHomophoneCMUProDic,
          totalDifWordCMUProDic, cmuPronDicEnUSFreq, cmuPronDicEnUSdic,
         file = "CorpusCMUdic.RData")
-    Sys.time() - currentTime
 })else{
     print("Loading previous CMU dictionary.")
     load("CorpusCMUdic.RData")
@@ -1340,13 +1338,12 @@ sylProc <- function(w){
 ```{r syllableFreqEnUSblogs, echo=FALSE, cache=TRUE, message=FALSE}
 ```
 
+Syllables using [CMU Pronouncing Dictionary](http://www.speech.cs.cmu.edu/cgi-bin/cmudict?in=Arpabet)
 Some facts:  
-- Total of words in CMU Pronuciation Dictionary `r length(totalWordCMUProDic)`.  
-- Total of words in CMU Pronuciation Dictionary that are different pronunciation
-of the same word `r length(totalHomophoneCMUProDic)`.  
-
-- The 64 more frequent characters in the vocabulary are: `r names(alphabetFreqHCcorporaEnUS)[alphabetOrderFreqHCcorporaEnUS[1:64]]`
-- The 64 more frequent characters in the EnUS blogs document are: `r alphabetFreqHCcorporaEnUSblogs$chr[1:64]`
+- Total of words in CMU Pronouncing Dictionary `r totalWordCMUProDic`.  
+- Total of words in CMU Pronouncing Dictionary that are different pronunciation
+of the same word `r totalHomophoneCMUProDic`.  
+- Total of different words in CMU Pronouncing Dictionary are `r totalDifWordCMUProDic`.  
 
 # Task 3 - Build basic n-gram model & handle unseen n-grams  
 
