@@ -203,7 +203,7 @@ characters exactly.)
     know how to compose in cases like "un[[lock]able]" vs "[un[lock]]able]".  
 12. What is the relationship between NLP and the concepts you have learned in 
 the Specialization?  
-    * Now days, the differents problems attacked by NLP techniques are 
+    * Now days, the different problems attacked by NLP techniques are 
     considered machine learning problems, and the best techniques in this 
     field are the same or some extension of the tools tought in the 
     specialization.  
@@ -418,7 +418,7 @@ frequency. The total of swear-bad words is
 `r ammountOfBad_SwearWordsInVocabularyEnUS`.
 As can be see it, the majority of the words are not bad words by definition. It's
 depends on the context. So we prefer do not remove the bad and swear words and 
-look for approaches that consider the usage.
+look for approaches that consider just the usage and not the context.
 
 # Task 2 - Exploratory analysis & Understand frequencies of words and word pairs
 
@@ -687,6 +687,135 @@ frequent words is `r percentege80KWordMoreFreqHCcorporaEnUStwitter*100`%
 frequent words is `r percentege11KWordMoreFreqHCcorporaEnUStwitter*100`%  
 * The 15 more frequent words are: 
 `r vocabularyHCcorporaEnUSbyIndex[wordOrderHCcorporaEnUStwitter[1:15]]`  
+
+## Analysis of frequencies of LAST WORDS
+
+```{r lastGramFreqTwitter, echo=FALSE, cache=TRUE, message=FALSE}
+if(!exists("lastGramFreqEnUsTwitter")){
+    # Environment used as dictionary for 3-grams in last position for twitter source
+    lastGramFreqEnUsTwitter <- new.env(hash = TRUE)
+    lastGramFreqEnUsTwitterList <- new.env(hash = TRUE)
+    addLastGramFreqEnUsTiwtter <- function(gramVec){
+        # Counter dictionary
+        pI <- paste0(gramVec[1],"_",gramVec[2],"_",gramVec[3],"_",gramVec[4],"_",gramVec[5],"_",gramVec[6])
+        pC <- lastGramFreqEnUsTwitter[[pI]]  
+        if(is.null(pC))
+            pC <- 0
+        lastGramFreqEnUsTwitter[[pI]] <<- pC + 1
+        # Last word list dictionary
+        pI <- paste0(gramVec[1],"_",gramVec[2],"_",gramVec[3],"_",gramVec[4],"_",gramVec[5])
+        lC <- lastGramFreqEnUsTwitterList[[pI]]  
+        if(is.null(lC))
+            lC <- gramVec[6]
+        else
+            lC <- c(lC, gramVec[6])
+        lastGramFreqEnUsTwitterList[[pI]] <<- lC
+    }
+
+    procEndOfTweet <- function(tLt){
+        temp2 <- length(tLt)
+        if(temp2 > 5){
+            iN <- tLt[temp2]
+            iN_1 <- tLt[temp2-1]
+            iN_2 <- tLt[temp2-2]
+            i3 <- tLt[3]
+            i2 <- tLt[2]
+            i1 <- tLt[1]
+            
+            ind <- c(i1,i2,i3,iN_2,iN_1,iN)
+            addLastGramFreqEnUsTiwtter(ind)
+#            for(sW in 1:5){
+#                wildcard <- rep("*",sW)
+#                for(j in 1:(6-sW)){
+#                    indTemp <- replace(ind, j:(j+sW-1), wildcard)
+#                    addLastGramFreqEnUsTiwtter(indTemp)
+#                }
+#            }
+        }
+    }
+    text <- corpusHCcorporaEnUS.OnlyLetters[["en_US.twitter.txt"]]$content[1]
+    text <- "How are you Btw thanks for the RT You gonna be in DC anytime soon Love to see you Been way way too"
+    text <- "When you meet someone special youll know Your heart will beat more rapidly and youll smile for no"
+    lastGramFreqEnUsTwitter <- new.env(hash = TRUE)
+    lastGramFreqEnUsTwitterList <- new.env(hash = TRUE)
+    system.time(sapply(tokenizedHCcorporaEnUStwitter[1:10], procEndOfTweet))
+    system.time(sapply(tokenizedHCcorporaEnUStwitter[11:110], procEndOfTweet))
+    system.time(sapply(tokenizedHCcorporaEnUStwitter[111:1110], procEndOfTweet))
+    system.time(sapply(tokenizedHCcorporaEnUStwitter[1111:10000], procEndOfTweet))
+    system.time(sapply(tokenizedHCcorporaEnUStwitter[10001:20000], procEndOfTweet))
+    system.time(sapply(tokenizedHCcorporaEnUStwitter[20001:50000], procEndOfTweet))
+    iLe <- length(tokenizedHCcorporaEnUStwitter)
+    iLi <- iLe - 20000
+    system.time(sapply(tokenizedHCcorporaEnUStwitter[iLi:iLe], procEndOfTweet))
+    iLe <- iLi-1
+    iLi <- iLe - 20000
+    system.time(sapply(tokenizedHCcorporaEnUStwitter[iLi:iLe], procEndOfTweet))
+
+    save(vocabularyHCcorporaEnUSbyWord, vocabularyHCcorporaEnUSbyIndex, lastGramFreqEnUsTwitterList, lastGramFreqEnUsTwitter, file = "ReleaseTwitter.RData")
+}
+```
+
+```{r lastGramFreqNews, echo=FALSE, cache=TRUE, message=FALSE}
+if(!exists("lastGramFreqEnUsNews")){
+    # Environment used as dictionary for 3-grams in last position for twitter source
+    lastGramFreqEnUsNews <- new.env(hash = TRUE)
+    lastGramFreqEnUsNewsList <- new.env(hash = TRUE)
+    addLastGramFreqEnUsNews <- function(gramVec){
+        # Counter dictionary
+        pI <- paste0(gramVec[1],"_",gramVec[2],"_",gramVec[3],"_",gramVec[4],"_",gramVec[5],"_",gramVec[6])
+        pC <- lastGramFreqEnUsNews[[pI]]  
+        if(is.null(pC))
+            pC <- 0
+        lastGramFreqEnUsNews[[pI]] <<- pC + 1
+        # Last word list dictionary
+        pI <- paste0(gramVec[1],"_",gramVec[2],"_",gramVec[3],"_",gramVec[4],"_",gramVec[5])
+        lC <- lastGramFreqEnUsNewsList[[pI]]  
+        if(is.null(lC))
+            lC <- gramVec[6]
+        else
+            lC <- c(lC, gramVec[6])
+        lastGramFreqEnUsNewsList[[pI]] <<- lC
+    }
+
+    procEndOfNew <- function(tLt){
+        temp2 <- length(tLt)
+        if(temp2 > 5){
+            iN <- tLt[temp2]
+            iN_1 <- tLt[temp2-1]
+            iN_2 <- tLt[temp2-2]
+            i3 <- tLt[3]
+            i2 <- tLt[2]
+            i1 <- tLt[1]
+            
+            ind <- c(i1,i2,i3,iN_2,iN_1,iN)
+            addLastGramFreqEnUsNews(ind)
+#            for(sW in 1:5){
+#                wildcard <- rep("*",sW)
+#                for(j in 1:(6-sW)){
+#                    indTemp <- replace(ind, j:(j+sW-1), wildcard)
+#                    addLastGramFreqEnUsTiwtter(indTemp)
+#                }
+#            }
+        }
+    }
+    lastGramFreqEnUsNews <- new.env(hash = TRUE)
+    lastGramFreqEnUsNewsList <- new.env(hash = TRUE)
+    system.time(sapply(tokenizedHCcorporaEnUSnews[1:10], procEndOfNew))
+    system.time(sapply(tokenizedHCcorporaEnUSnews[11:110], procEndOfNew))
+    system.time(sapply(tokenizedHCcorporaEnUSnews[111:1110], procEndOfNew))
+    system.time(sapply(tokenizedHCcorporaEnUSnews[1111:10000], procEndOfNew))
+    system.time(sapply(tokenizedHCcorporaEnUSnews[10001:20000], procEndOfNew))
+    system.time(sapply(tokenizedHCcorporaEnUSnews[20001:50000], procEndOfNew))
+    iLe <- length(tokenizedHCcorporaEnUSnews)
+    iLi <- iLe - 20000
+    system.time(sapply(tokenizedHCcorporaEnUSnews[iLi:iLe], procEndOfNew))
+    iLe <- iLi-1
+    iLi <- iLe - 20000
+    system.time(sapply(tokenizedHCcorporaEnUSnews[iLi:iLe], procEndOfNew))
+
+    save(lastGramFreqEnUsNewsList, lastGramFreqEnUsNews, file = "ReleaseNews.RData")
+}
+```
 
 ## Frequencies of word pair and triplet for EnUSblogs  
 

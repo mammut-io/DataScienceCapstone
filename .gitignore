@@ -9,3 +9,7 @@ Notebook_cache
 .DS_Store
 NotebookOntologies_cache
 CMUPronuciationDict
+MilestoneReport_cache
+.RDataTmp
+ReleaseNews.RData
+ReleaseTwitter.RData

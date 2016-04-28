@@ -36,3 +36,61 @@ Here are a few tools that may be of use to you as you work on their algorithm:
 - `gc()`: this function runs the garbage collector to retrieve unused RAM for R. In the process it tells you how much memory is currently being used by R.
 There will likely be a tradeoff that you have to make in between size and runtime. For example, an algorithm that requires a lot of memory, may run faster, while a slower algorithm may require less memory. You will have to find the right balance between the two in order to provide a good experience to the user.
 
+```
+temp<-"the guy in front of me just bought a pound of bacon a bouquet and a case of"
+*beer
+pretzels
+cheese
+soda
+temp <- strsplit(temp, " ", fixed = TRUE)
+temp <- unlist(temp)
+vocabularyHCcorporaEnUSbyWord[[temp[1]]]
+
+
+temp<-"You're the reason why I smile everyday. Can you follow me please? It would mean the"
+X-most
+X-best
+universe
+world
+temp<-"Hey sunshine, can you follow me and make me the"
+happiest
+X-smelliest
+X-bluest
+saddest
+temp<-"Very early observations on the Bills game: Offense still struggling but the"
+referees
+defense
+X-crowd
+X-players
+temp<-"Go on a romantic date at the"
+*beach
+grocery
+movies
+X-mall
+temp<-"Well I'm pretty sure my granny has some old bagpipes in her garage I'll dust them off and be on my"
+horse
+phone
+*way
+motorcycle
+temp<-"Ohhhhh #PointBreak is on tomorrow. Love that film and haven't seen it in quite some"
+weeks
+X-time
+X-years
+thing
+temp<-"After the ice bucket challenge Louis will push his long wet hair out of his eyes with his little"
+X-fingers
+ears
+eyes 
+X-toes
+temp<-"Be grateful for the good times and keep the faith during the"
+X-sad
+bad
+worse
+X-hard
+temp<-"If this isn't the cutest thing you've ever seen, then you must be"
+*insane
+X-insensitive
+callous
+X-asleep
+```
+
