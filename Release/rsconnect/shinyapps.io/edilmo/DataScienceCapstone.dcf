@@ -1,8 +1,8 @@
 name: DataScienceCapstone
 account: edilmo
 server: shinyapps.io
-bundleId: 436279
+bundleId: 437215
 url: https://edilmo.shinyapps.io/DataScienceCapstone/
-when: 1461790043.50371
+when: 1461879959.15997
 asMultiple: FALSE
 asStatic: FALSE

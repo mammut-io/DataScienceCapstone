@@ -693,6 +693,47 @@ frequent words is `r percentege11KWordMoreFreqHCcorporaEnUStwitter*100`%
 ```{r lastGramFreqTwitter, echo=FALSE, cache=TRUE, message=FALSE}
 if(!exists("lastGramFreqEnUsTwitter")){
     # Environment used as dictionary for 3-grams in last position for twitter source
+    vocabullarySimplifiedByWord <- new.env(hash = TRUE)
+    vocabullarySimplifiedByIndex <- NULL
+    vocabullarySimplifiedFreqByIndex <- NULL
+    tokenizeLine <- function(line){
+            line <- removeNumbers(line)
+            line <- removePunctuation(line)
+            line <- stripWhitespace(line)
+            line <- str_trim(line)
+            line <- str_to_lower(line)
+            words <- strsplit(line," ",fixed = TRUE)
+            words <- unlist(words)
+            # result variable to store the tokenize version of the line
+            tokenizeLine <- numeric(length = length(words))
+            # index variable of the word to tokenize
+            i <- 1
+            for(w in words){
+                # get the index of the word in our vocabulary dictionary
+                wIndex <- vocabullarySimplifiedByWord[[w]]  
+                # check if the word exist in our vocabulary
+                if(is.null(wIndex)){
+                    # the index for a new word it's just the lenght of the 
+                    # vocabulary
+                    wIndex <- length(vocabullarySimplifiedByIndex) + 1
+                    # add the word to the vocabulary dictionary by word
+                    vocabullarySimplifiedByWord[[w]] <<- wIndex
+                    # add the word to the vocabulary dictionary by index
+                    vocabullarySimplifiedByIndex[wIndex] <<- w
+                    # initialize the frequency for the word to 0
+                    vocabullarySimplifiedFreqByIndex[wIndex] <<- 0
+                }
+                # increase the frequency of the word
+                vocabullarySimplifiedFreqByIndex[wIndex] <<- vocabullarySimplifiedFreqByIndex[wIndex] + 1
+                # append the index of the word the tokenized line
+                tokenizeLine[i] <- wIndex
+                # increase the index of the word to process
+                i <- i + 1
+            }
+            # return the tokenized line
+            tokenizeLine
+    }
+    # Environment used as dictionary for 3-grams in last position for twitter source
     lastGramFreqEnUsTwitter <- new.env(hash = TRUE)
     lastGramFreqEnUsTwitterList <- new.env(hash = TRUE)
     addLastGramFreqEnUsTiwtter <- function(gramVec){
@@ -711,6 +752,78 @@ if(!exists("lastGramFreqEnUsTwitter")){
             lC <- c(lC, gramVec[6])
         lastGramFreqEnUsTwitterList[[pI]] <<- lC
     }
+    biGramFreqEnUsTwitter <- new.env(hash = TRUE)
+    biGramFreqEnUsTwitterList <- new.env(hash = TRUE)
+    addBiGramFreqEnUsTiwtter <- function(gramVec){
+        # Counter dictionary
+        pI <- paste0(gramVec[1],"_",gramVec[2])
+        pC <- biGramFreqEnUsTwitter[[pI]]  
+        if(is.null(pC))
+            pC <- 0
+        biGramFreqEnUsTwitter[[pI]] <<- pC + 1
+        # Last word list dictionary
+        pI <- paste0(gramVec[1])
+        lC <- biGramFreqEnUsTwitterList[[pI]]  
+        if(is.null(lC))
+            lC <- gramVec[2]
+        else
+            lC <- c(lC, gramVec[2])
+        biGramFreqEnUsTwitterList[[pI]] <<- lC
+    }
+    triGramFreqEnUsTwitter <- new.env(hash = TRUE)
+    triGramFreqEnUsTwitterList <- new.env(hash = TRUE)
+    addTriGramFreqEnUsTiwtter <- function(gramVec){
+        # Counter dictionary
+        pI <- paste0(gramVec[1],"_",gramVec[2],"_",gramVec[3])
+        pC <- triGramFreqEnUsTwitter[[pI]]  
+        if(is.null(pC))
+            pC <- 0
+        triGramFreqEnUsTwitter[[pI]] <<- pC + 1
+        # Last word list dictionary
+        pI <- paste0(gramVec[1],"_",gramVec[2])
+        lC <- triGramFreqEnUsTwitterList[[pI]]  
+        if(is.null(lC))
+            lC <- gramVec[3]
+        else
+            lC <- c(lC, gramVec[3])
+        triGramFreqEnUsTwitterList[[pI]] <<- lC
+    }
+    fourGramFreqEnUsTwitter <- new.env(hash = TRUE)
+    fourGramFreqEnUsTwitterList <- new.env(hash = TRUE)
+    addFourGramFreqEnUsTiwtter <- function(gramVec){
+        # Counter dictionary
+        pI <- paste0(gramVec[1],"_",gramVec[2],"_",gramVec[3],"_",gramVec[4])
+        pC <- fourGramFreqEnUsTwitter[[pI]]  
+        if(is.null(pC))
+            pC <- 0
+        fourGramFreqEnUsTwitter[[pI]] <<- pC + 1
+        # Last word list dictionary
+        pI <- paste0(gramVec[1],"_",gramVec[2],"_",gramVec[3])
+        lC <- fourGramFreqEnUsTwitterList[[pI]]  
+        if(is.null(lC))
+            lC <- gramVec[4]
+        else
+            lC <- c(lC, gramVec[4])
+        fourGramFreqEnUsTwitterList[[pI]] <<- lC
+    }
+    fiveGramFreqEnUsTwitter <- new.env(hash = TRUE)
+    fiveGramFreqEnUsTwitterList <- new.env(hash = TRUE)
+    addFiveGramFreqEnUsTiwtter <- function(gramVec){
+        # Counter dictionary
+        pI <- paste0(gramVec[1],"_",gramVec[2],"_",gramVec[3],"_",gramVec[4],"_",gramVec[5])
+        pC <- fiveGramFreqEnUsTwitter[[pI]]  
+        if(is.null(pC))
+            pC <- 0
+        fiveGramFreqEnUsTwitter[[pI]] <<- pC + 1
+        # Last word list dictionary
+        pI <- paste0(gramVec[1],"_",gramVec[2],"_",gramVec[3],"_",gramVec[4])
+        lC <- fiveGramFreqEnUsTwitterList[[pI]]  
+        if(is.null(lC))
+            lC <- gramVec[5]
+        else
+            lC <- c(lC, gramVec[5])
+        fiveGramFreqEnUsTwitterList[[pI]] <<- lC
+    }
 
     procEndOfTweet <- function(tLt){
         temp2 <- length(tLt)
@@ -724,6 +837,10 @@ if(!exists("lastGramFreqEnUsTwitter")){
             
             ind <- c(i1,i2,i3,iN_2,iN_1,iN)
             addLastGramFreqEnUsTiwtter(ind)
+            addBiGramFreqEnUsTiwtter(ind)
+            addTriGramFreqEnUsTiwtter(ind)
+            addFourGramFreqEnUsTiwtter(ind)
+            addFiveGramFreqEnUsTiwtter(ind)
 #            for(sW in 1:5){
 #                wildcard <- rep("*",sW)
 #                for(j in 1:(6-sW)){
@@ -733,11 +850,17 @@ if(!exists("lastGramFreqEnUsTwitter")){
 #            }
         }
     }
+
     text <- corpusHCcorporaEnUS.OnlyLetters[["en_US.twitter.txt"]]$content[1]
     text <- "How are you Btw thanks for the RT You gonna be in DC anytime soon Love to see you Been way way too"
     text <- "When you meet someone special youll know Your heart will beat more rapidly and youll smile for no"
+    vocabullarySimplifiedByWord <- new.env(hash = TRUE)
+    vocabullarySimplifiedByIndex <- NULL
+    vocabullarySimplifiedFreqByIndex <- NULL
     lastGramFreqEnUsTwitter <- new.env(hash = TRUE)
     lastGramFreqEnUsTwitterList <- new.env(hash = TRUE)
+    
+    
     system.time(sapply(tokenizedHCcorporaEnUStwitter[1:10], procEndOfTweet))
     system.time(sapply(tokenizedHCcorporaEnUStwitter[11:110], procEndOfTweet))
     system.time(sapply(tokenizedHCcorporaEnUStwitter[111:1110], procEndOfTweet))
@@ -750,8 +873,27 @@ if(!exists("lastGramFreqEnUsTwitter")){
     iLe <- iLi-1
     iLi <- iLe - 20000
     system.time(sapply(tokenizedHCcorporaEnUStwitter[iLi:iLe], procEndOfTweet))
-
     save(vocabularyHCcorporaEnUSbyWord, vocabularyHCcorporaEnUSbyIndex, lastGramFreqEnUsTwitterList, lastGramFreqEnUsTwitter, file = "ReleaseTwitter.RData")
+    
+    vocabullarySimplifiedByWord <- new.env(hash = TRUE)
+    vocabullarySimplifiedByIndex <- NULL
+    vocabullarySimplifiedFreqByIndex <- NULL
+    lastGramFreqEnUsTwitter <- new.env(hash = TRUE)
+    lastGramFreqEnUsTwitterList <- new.env(hash = TRUE)
+    biGramFreqEnUsTwitter <- new.env(hash = TRUE)
+    biGramFreqEnUsTwitterList <- new.env(hash = TRUE)
+    triGramFreqEnUsTwitter <- new.env(hash = TRUE)
+    triGramFreqEnUsTwitterList <- new.env(hash = TRUE)
+    fourGramFreqEnUsTwitter <- new.env(hash = TRUE)
+    fourGramFreqEnUsTwitterList <- new.env(hash = TRUE)
+    fiveGramFreqEnUsTwitter <- new.env(hash = TRUE)
+    fiveGramFreqEnUsTwitterList <- new.env(hash = TRUE)
+    iLe <- length(corpusHCcorporaEnUS.OnlyLetters[["en_US.twitter.txt"]]$content)
+    iLi <- iLe - 20000
+    temp <- c(corpusHCcorporaEnUS.OnlyLetters[["en_US.twitter.txt"]]$content[1:20000],
+              corpusHCcorporaEnUS.OnlyLetters[["en_US.twitter.txt"]]$content[iLi:iLe])
+    system.time(tokenizedSimplifiedEnUStwitter <- lapply(temp, tokenizeLine))
+    system.time(sapply(tokenizedSimplifiedEnUStwitter, procEndOfTweet))
 }
 ```
 
@@ -776,6 +918,78 @@ if(!exists("lastGramFreqEnUsNews")){
             lC <- c(lC, gramVec[6])
         lastGramFreqEnUsNewsList[[pI]] <<- lC
     }
+    biGramFreqEnUsNews <- new.env(hash = TRUE)
+    biGramFreqEnUsNewsList <- new.env(hash = TRUE)
+    addBiGramFreqEnUsNews <- function(gramVec){
+        # Counter dictionary
+        pI <- paste0(gramVec[1],"_",gramVec[2])
+        pC <- biGramFreqEnUsNews[[pI]]  
+        if(is.null(pC))
+            pC <- 0
+        biGramFreqEnUsNews[[pI]] <<- pC + 1
+        # Last word list dictionary
+        pI <- paste0(gramVec[1])
+        lC <- biGramFreqEnUsNewsList[[pI]]  
+        if(is.null(lC))
+            lC <- gramVec[2]
+        else
+            lC <- c(lC, gramVec[2])
+        biGramFreqEnUsNewsList[[pI]] <<- lC
+    }
+    triGramFreqEnUsNews <- new.env(hash = TRUE)
+    triGramFreqEnUsNewsList <- new.env(hash = TRUE)
+    addTriGramFreqEnUsNews <- function(gramVec){
+        # Counter dictionary
+        pI <- paste0(gramVec[1],"_",gramVec[2],"_",gramVec[3])
+        pC <- triGramFreqEnUsNews[[pI]]  
+        if(is.null(pC))
+            pC <- 0
+        triGramFreqEnUsNews[[pI]] <<- pC + 1
+        # Last word list dictionary
+        pI <- paste0(gramVec[1],"_",gramVec[2])
+        lC <- triGramFreqEnUsNewsList[[pI]]  
+        if(is.null(lC))
+            lC <- gramVec[3]
+        else
+            lC <- c(lC, gramVec[3])
+        triGramFreqEnUsNewsList[[pI]] <<- lC
+    }
+    fourGramFreqEnUsNews <- new.env(hash = TRUE)
+    fourGramFreqEnUsNewsList <- new.env(hash = TRUE)
+    addFourGramFreqEnUsNews <- function(gramVec){
+        # Counter dictionary
+        pI <- paste0(gramVec[1],"_",gramVec[2],"_",gramVec[3],"_",gramVec[4])
+        pC <- fourGramFreqEnUsNews[[pI]]  
+        if(is.null(pC))
+            pC <- 0
+        fourGramFreqEnUsNews[[pI]] <<- pC + 1
+        # Last word list dictionary
+        pI <- paste0(gramVec[1],"_",gramVec[2],"_",gramVec[3])
+        lC <- fourGramFreqEnUsNewsList[[pI]]  
+        if(is.null(lC))
+            lC <- gramVec[4]
+        else
+            lC <- c(lC, gramVec[4])
+        fourGramFreqEnUsNewsList[[pI]] <<- lC
+    }
+    fiveGramFreqEnUsNews <- new.env(hash = TRUE)
+    fiveGramFreqEnUsNewsList <- new.env(hash = TRUE)
+    addFiveGramFreqEnUsNews <- function(gramVec){
+        # Counter dictionary
+        pI <- paste0(gramVec[1],"_",gramVec[2],"_",gramVec[3],"_",gramVec[4],"_",gramVec[5])
+        pC <- fiveGramFreqEnUsNews[[pI]]  
+        if(is.null(pC))
+            pC <- 0
+        fiveGramFreqEnUsNews[[pI]] <<- pC + 1
+        # Last word list dictionary
+        pI <- paste0(gramVec[1],"_",gramVec[2],"_",gramVec[3],"_",gramVec[4])
+        lC <- fiveGramFreqEnUsNewsList[[pI]]  
+        if(is.null(lC))
+            lC <- gramVec[5]
+        else
+            lC <- c(lC, gramVec[5])
+        fiveGramFreqEnUsNewsList[[pI]] <<- lC
+    }
 
     procEndOfNew <- function(tLt){
         temp2 <- length(tLt)
@@ -789,15 +1003,20 @@ if(!exists("lastGramFreqEnUsNews")){
             
             ind <- c(i1,i2,i3,iN_2,iN_1,iN)
             addLastGramFreqEnUsNews(ind)
+            addBiGramFreqEnUsNews(ind)
+            addTriGramFreqEnUsNews(ind)
+            addFourGramFreqEnUsNews(ind)
+            addFiveGramFreqEnUsNews(ind)
 #            for(sW in 1:5){
 #                wildcard <- rep("*",sW)
 #                for(j in 1:(6-sW)){
 #                    indTemp <- replace(ind, j:(j+sW-1), wildcard)
-#                    addLastGramFreqEnUsTiwtter(indTemp)
+#                    addLastGramFreqEnUsNews(indTemp)
 #                }
 #            }
         }
     }
+
     lastGramFreqEnUsNews <- new.env(hash = TRUE)
     lastGramFreqEnUsNewsList <- new.env(hash = TRUE)
     system.time(sapply(tokenizedHCcorporaEnUSnews[1:10], procEndOfNew))
@@ -812,8 +1031,64 @@ if(!exists("lastGramFreqEnUsNews")){
     iLe <- iLi-1
     iLi <- iLe - 20000
     system.time(sapply(tokenizedHCcorporaEnUSnews[iLi:iLe], procEndOfNew))
-
     save(lastGramFreqEnUsNewsList, lastGramFreqEnUsNews, file = "ReleaseNews.RData")
+
+    
+    lastGramFreqEnUsNews <- new.env(hash = TRUE)
+    lastGramFreqEnUsNewsList <- new.env(hash = TRUE)
+    biGramFreqEnUsNews <- new.env(hash = TRUE)
+    biGramFreqEnUsNewsList <- new.env(hash = TRUE)
+    triGramFreqEnUsNews <- new.env(hash = TRUE)
+    triGramFreqEnUsNewsList <- new.env(hash = TRUE)
+    fourGramFreqEnUsNews <- new.env(hash = TRUE)
+    fourGramFreqEnUsNewsList <- new.env(hash = TRUE)
+    fiveGramFreqEnUsNews <- new.env(hash = TRUE)
+    fiveGramFreqEnUsNewsList <- new.env(hash = TRUE)
+    iLe <- length(corpusHCcorporaEnUS.OnlyLetters[["en_US.news.txt"]]$content)
+    iLi <- iLe - 20000
+    temp <- c(corpusHCcorporaEnUS.OnlyLetters[["en_US.news.txt"]]$content[1:20000],
+              corpusHCcorporaEnUS.OnlyLetters[["en_US.news.txt"]]$content[iLi:iLe])
+    system.time(tokenizedSimplifiedEnUSNews <- lapply(temp, tokenizeLine))
+    system.time(sapply(tokenizedSimplifiedEnUSNews, procEndOfNew))
+    vocabullarySimplifiedFreqByIndexAndPos <- matrix(data = rep(1, length(vocabullarySimplifiedFreqByIndex)*5), 
+                                                     nrow = length(vocabullarySimplifiedFreqByIndex), 
+                                                     ncol = 5)
+    for(l in tokenizedSimplifiedEnUStwitter){
+        vocabullarySimplifiedFreqByIndexAndPos[l[1],1] <- vocabullarySimplifiedFreqByIndexAndPos[l[1],1] + 1
+        vocabullarySimplifiedFreqByIndexAndPos[l[2],2] <- vocabullarySimplifiedFreqByIndexAndPos[l[2],2] + 1
+        vocabullarySimplifiedFreqByIndexAndPos[l[3],3] <- vocabullarySimplifiedFreqByIndexAndPos[l[3],3] + 1
+        vocabullarySimplifiedFreqByIndexAndPos[l[length(l)-2],4] <- vocabullarySimplifiedFreqByIndexAndPos[l[length(l)-2],4] + 1
+        vocabullarySimplifiedFreqByIndexAndPos[l[length(l)-1],5] <- vocabullarySimplifiedFreqByIndexAndPos[l[length(l)-1],5] + 1
+    }
+    for(l in tokenizedSimplifiedEnUSNews){
+        vocabullarySimplifiedFreqByIndexAndPos[l[1],1] <- vocabullarySimplifiedFreqByIndexAndPos[l[1],1] + 1
+        vocabullarySimplifiedFreqByIndexAndPos[l[2],2] <- vocabullarySimplifiedFreqByIndexAndPos[l[2],2] + 1
+        vocabullarySimplifiedFreqByIndexAndPos[l[3],3] <- vocabullarySimplifiedFreqByIndexAndPos[l[3],3] + 1
+        vocabullarySimplifiedFreqByIndexAndPos[l[length(l)-2],4] <- vocabullarySimplifiedFreqByIndexAndPos[l[length(l)-2],4] + 1
+        vocabullarySimplifiedFreqByIndexAndPos[l[length(l)-1],5] <- vocabullarySimplifiedFreqByIndexAndPos[l[length(l)-1],5] + 1
+    }
+    vocabullarySimplifiedFreqByIndexAndPosOrder <- matrix(
+        data = c(order(vocabullarySimplifiedFreqByIndexAndPos[,1], decreasing = TRUE),
+                order(vocabullarySimplifiedFreqByIndexAndPos[,2], decreasing = TRUE),
+                order(vocabullarySimplifiedFreqByIndexAndPos[,3], decreasing = TRUE),
+                order(vocabullarySimplifiedFreqByIndexAndPos[,4], decreasing = TRUE),
+                order(vocabullarySimplifiedFreqByIndexAndPos[,5], decreasing = TRUE)), 
+                                                     nrow = length(vocabullarySimplifiedFreqByIndex), 
+                                                     ncol = 5)
+    system.time(save(vocabullarySimplifiedByWord, vocabullarySimplifiedByIndex, 
+                     vocabullarySimplifiedFreqByIndex, 
+                     vocabullarySimplifiedFreqByIndexAndPos, vocabullarySimplifiedFreqByIndexAndPosOrder,
+                     lastGramFreqEnUsTwitterList, lastGramFreqEnUsTwitter, 
+                     biGramFreqEnUsTwitterList, biGramFreqEnUsTwitter, 
+                     triGramFreqEnUsTwitterList, triGramFreqEnUsTwitter, 
+                     fourGramFreqEnUsTwitterList, fourGramFreqEnUsTwitter, 
+                     fiveGramFreqEnUsTwitterList, fiveGramFreqEnUsTwitter, 
+                     lastGramFreqEnUsNewsList, lastGramFreqEnUsNews, 
+                     biGramFreqEnUsNewsList, biGramFreqEnUsNews, 
+                     triGramFreqEnUsNewsList, triGramFreqEnUsNews, 
+                     fourGramFreqEnUsNewsList, fourGramFreqEnUsNews, 
+                     fiveGramFreqEnUsNewsList, fiveGramFreqEnUsNews, 
+                     file = "ReleaseAll.RData"))
 }
 ```
 
