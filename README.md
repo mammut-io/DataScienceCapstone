@@ -18,3 +18,7 @@ This is the training data to get you started that will be the basis for most of 
 - [Data Set](https://d396qusza40orc.cloudfront.net/dsscapstone/dataset/Coursera-SwiftKey.zip)
 
 Later in the course you may use external data sets to augment your model as you see fit.
+
+## Not Mantained
+
+This is an old project that could be completely out of date with respect to the actual project asked in the course.
