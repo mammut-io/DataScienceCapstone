@@ -22,3 +22,4 @@ Later in the course you may use external data sets to augment your model as you 
 ## Not Mantained
 
 This is an old project that could be completely out of date with respect to the actual project asked in the course.
+For more details please check the course website.
